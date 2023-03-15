@@ -82,7 +82,7 @@ pub struct PutOption {
     pub stk: i128,
     pub trades: Vec<Address>,
     pub exp: TimeBound,
-    pub opt_type: u32, // Bitmask for options details 0x0 = American, 0x1 = European
+    pub opt_type: u32, // Bitmask for options details 0x0 = American, 0x1 = European, 0x2 = Call, 0x4 = Put, 0x8 = Binary, 
 }
 
 pub struct PutOptionContract;
@@ -108,6 +108,13 @@ fn check_time_bound(env: &Env, time_bound: &TimeBound) -> bool {
 //    receives the balance.
 #[contractimpl]
 impl PutOptionContract {
+
+    pub fn init(
+        env: Env,
+    ) {
+        Env::set_data(DataKey::Init, true);
+    }
+    
     pub fn list(
         env: Env,
         strike: i128,      // strike price
