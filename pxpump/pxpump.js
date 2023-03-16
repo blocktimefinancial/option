@@ -4,8 +4,8 @@
 // Path: pxpump/pxpump.js
 // Author: Lou Morgan, Mitchell Bringe
 
+const BigNumber = require("bignumber.js");
 const yf = require("yahoo-finance2").default;
-const { BigNumber } = require("bignumber.js");
 const util = require("util");
 const stellar_sdk = require("stellar-sdk");
 const SorobanClient = require("soroban-client");
@@ -18,10 +18,8 @@ function convertFloatToInt(obj) {
   let newObj = {};
   for (const [key, value] of Object.entries(obj)) {
     if (typeof value === "number" && Number.isFinite(value)) {
-      console.log(`convertFloatToInt: ${key} ${value}`);
-      let v = new BigNumber(value) * 10000000;
-      console.log(`convertFloatToInt: ${key} BigNumber${v}`);
-      newObj[key] = v.integerValue();
+      let v = new BigNumber(value * 10000000);
+      newObj[key] = v.toFormat(0);
     } else {
       newObj[key] = value;
     }
@@ -32,7 +30,7 @@ function convertFloatToInt(obj) {
 function convertDatesToTimestamps(obj) {
   let newObj = {};
   for (const [key, value] of Object.entries(obj)) {
-    if (typeof value === "string") {
+    if (value instanceof Date) {
       const timestamp = Date.parse(value);
       if (!isNaN(timestamp)) {
         newObj[key] = timestamp;
@@ -65,7 +63,7 @@ function toSorobanArgs(quote) {
   // the same format as Soroban VM timestamps.
   quote = convertDatesToTimestamps(quote);
 
-  return JSON.stringify(quote);
+  return JSON.stringify(quote, null, 2);
 }
 
 // Update the smart contract with the latest quote
@@ -130,6 +128,7 @@ async function timerFunc(scDetailsObj) {
 // Call the timerFunc every minute to update the smart contract
 // with the latest quote
 async function main() {
+
   kp = SorobanClient.Keypair.fromSecret(process.env.SECRET_KEY);
   console.log(`Updating ${process.env.SC_CONTRACTID} using ${kp.publicKey()}`);
 
@@ -142,7 +141,6 @@ async function main() {
   };
 
   setInterval(async () => await timerFunc(scDetailsObj), 60000);
-
 }
 
 main();
