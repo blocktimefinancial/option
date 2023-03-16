@@ -6,18 +6,22 @@
 
 const yf = require("yahoo-finance2").default;
 const { BigNumber } = require("bignumber.js");
+const util = require("util");
 const stellar_sdk = require("stellar-sdk");
 const SorobanClient = require("soroban-client");
 require("dotenv").config();
 
-const server = new SorobanClient.Server(process.env.SOROBAN_SERVER);
+const server = new SorobanClient.Server(process.env.FUTURENET_SERVER);
 
 // Helper function to convert floating point numbers to BigNumber values with 7 decimal places of precision.
 function convertFloatToInt(obj) {
   let newObj = {};
   for (const [key, value] of Object.entries(obj)) {
     if (typeof value === "number" && Number.isFinite(value)) {
-      newObj[key] = (new BigNumber(value) * 10000000).toPrecision(0);
+      console.log(`convertFloatToInt: ${key} ${value}`);
+      let v = new BigNumber(value) * 10000000;
+      console.log(`convertFloatToInt: ${key} BigNumber${v}`);
+      newObj[key] = v.integerValue();
     } else {
       newObj[key] = value;
     }
@@ -60,7 +64,7 @@ function toSorobanArgs(quote) {
   // Dates are also not supported, so we'll convert them to timestamps in
   // the same format as Soroban VM timestamps.
   quote = convertDatesToTimestamps(quote);
-  
+
   return JSON.stringify(quote);
 }
 
@@ -70,43 +74,46 @@ async function updateSmartContract(scDetailsObj, quote) {
   // Create the transaction to update the smart contract
 
   const account = await server.getAccount(kp.publicKey());
-  console.log(
-    `Account: ${account.account_id} XLM: ${
-      account.balances.filter((b) => b.asset_type === "native")[0].balance
-    }`
-  );
+  console.log(`Account: ${account._accountId} SeqNum: ${account.sequence}`);
 
   // We don't know what the fees will be, so we'll just use a constant fee
   const fee = 100;
 
-  // Create the transaction to update the smart contract
-  // TODO: Build the arg string for the smart contract
-  let tx = new stellar_sdk.TransactionBuilder(scDetailsObj.kp, {
-    fee,
-    networkPassphrase: SorobanClient.Networks.STANDALONE,
-  })
-    .addOperation(
-      scDetailsObj.sc_contract.call(scDetailsObj.sc_func, toSorobanArgs(quote))
-    )
-    .setTimeout(60)
-    .build();
+  console.log(
+    `UpdatingSmartContract ${
+      scDetailsObj.sc_contractId
+    } using ${kp.publicKey()}`
+  );
+  console.log(`Converted quote: ${toSorobanArgs(quote)}`);
 
-  // Simulate the transaction to discover the storage footprint, and update the
-  // transaction to include it. If you already know the storage footprint you
-  // can use `addFootprint` to add it yourself, skipping this step.
-  tx = await server.prepareTransaction(tx);
+  // // Create the transaction to update the smart contract
+  // // TODO: Build the arg string for the smart contract
+  // let tx = new stellar_sdk.TransactionBuilder(scDetailsObj.kp, {
+  //   fee,
+  //   networkPassphrase: SorobanClient.Networks.STANDALONE,
+  // })
+  //   .addOperation(
+  //     scDetailsObj.sc_contract.call(scDetailsObj.sc_func, toSorobanArgs(quote))
+  //   )
+  //   .setTimeout(60)
+  //   .build();
 
-  // Sign the transaction with the kp (a key pair)
-  tx.sign(kp);
+  // // Simulate the transaction to discover the storage footprint, and update the
+  // // transaction to include it. If you already know the storage footprint you
+  // // can use `addFootprint` to add it yourself, skipping this step.
+  // tx = await server.prepareTransaction(tx);
 
-  let response = null;
-  try {
-    response = await server.sendTransaction(tx);
-  } catch (err) {
-    console.log(err);
-  }
+  // // Sign the transaction with the kp (a key pair)
+  // tx.sign(kp);
 
-  return response;
+  // let response = null;
+  // try {
+  //   response = await server.sendTransaction(tx);
+  // } catch (err) {
+  //   console.log(err);
+  // }
+
+  // return response;
 }
 
 // Update the smart contract with the latest quote
@@ -116,7 +123,8 @@ async function updateSmartContract(scDetailsObj, quote) {
 async function timerFunc(scDetailsObj) {
   const quote = await getQuote("SPY");
   console.log(quote);
-  //const response = await updateSmartContract(scDetailsObj, quote);
+  const response = await updateSmartContract(scDetailsObj, quote);
+  console.log(`UpdateSmartContract response: ${util.inspect(response)}`);
 }
 
 // Call the timerFunc every minute to update the smart contract
@@ -133,9 +141,8 @@ async function main() {
     sc_contract: new SorobanClient.Contract(process.env.SC_CONTRACTID),
   };
 
-  setInterval(async (scDetailsObj) => {
-    await timerFunc(scDetailsObj);
-  }, 60000);
+  setInterval(async () => await timerFunc(scDetailsObj), 60000);
+
 }
 
 main();
