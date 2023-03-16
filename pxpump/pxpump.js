@@ -68,13 +68,15 @@ async function updateSmartContract(scDetailsObj, quote) {
 async function timerFunc(scDetailsObj) {
   const quote = await getQuote("SPY");
   console.log(quote);
-  const response = await updateSmartContract(scDetailsObj, quote);
+  //const response = await updateSmartContract(scDetailsObj, quote);
 }
 
 // Call the timerFunc every minute to update the smart contract
 // with the latest quote
 async function main() {
+  
   kp = SorobanClient.Keypair.fromSecret(process.env.SECRET_KEY);
+  console.log(`Updating ${process.env.SC_CONTRACTID} using ${kp.publicKey()}`);
 
   const scDetailsObj = {
     kp,
