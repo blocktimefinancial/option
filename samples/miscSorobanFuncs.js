@@ -8,14 +8,15 @@ const remoteServerUrl = "https://rpc-futurenet.stellar.org";
 //const remoteServerUrl = "https://horizon-live.stellar.org:1337/api/v1/jsonrpc";
 
 // There is conflicting documentation on where the RPC endpoint is located.
-// const localServerUrl = "http://localhost:8000/soroban/rpc";
-const localServerUrl = "http://localhost:8000/api/v1/jsonrpc";
+ const localServerUrl = "http://localhost:8000/soroban/rpc";
+//const localServerUrl = "http://localhost:8000/api/v1/jsonrpc";
+//const localServerUrl = "http://localhost:8000";
 
 // Live as of 4/5/23, seqNum = 44723494453248, lastModfiedLedger = 10413
 const pk = "GDZ4CDLVSHQIAXRBTPHTPJ5MSCC6XO4R4IXRGRQ6VOVV2H2HFSQJHRYH";
 const sk = "SCIGOGUPFOZSEBVZBEF3BJL6SZGVSFYANQ6BZE6PTTQ7S4YXYDPY4JHL";
 
-const server = SorobanClient.Server(localServerUrl, { allowHttp: true });
+const server = new SorobanClient.Server(localServerUrl, { allowHttp: true });
 let xdr = SorobanClient.xdr;
 
 function getDefaultTxOptions() {
@@ -23,7 +24,7 @@ function getDefaultTxOptions() {
     server: server,
     allowHttp: true,
     fee: 100,
-    networkPassphrase: SorobanClient.Networks.STANDALONE,
+    networkPassphrase: SorobanClient.Networks.FUTURENET,
     v1: true,
   };
 }
@@ -52,7 +53,7 @@ function emptyFootprint() {
   });
 }
 
-export async function loadAccount(accountId, txOptions = {}) {
+ async function loadAccount(accountId, txOptions = {}) {
   if (!txOptions.server) {
     throw new Error("txOptions.server is required");
   }
@@ -61,7 +62,7 @@ export async function loadAccount(accountId, txOptions = {}) {
 
 // scval: SorobanClient.xdr.ScVal | undefined
 // Returns: BigNumber
-export function scvalToBigNumber(scval) {
+ function scvalToBigNumber(scval) {
   switch (scval?.switch()) {
     case undefined: {
       return BigNumber(0);
@@ -125,7 +126,7 @@ function bigNumberFromBytes(signed, ...bytes) {
 
 // value: BigNumber
 // Returns: SorobanClient.xdr.ScVal
-export function bigNumberToI128(value) {
+ function bigNumberToI128(value) {
   const b = BigInt(value.toFixed(0));
   const buf = bigintToBuf(b);
   if (buf.length > 16) {
@@ -188,7 +189,7 @@ function bigintToBuf(bn) {
 
 // value: SorobanClient.xdr.Uint64
 // Returns: number
-export function xdrUint64ToNumber(value) {
+ function xdrUint64ToNumber(value) {
   let b = 0;
   b |= value.high;
   b <<= 8;
@@ -198,25 +199,25 @@ export function xdrUint64ToNumber(value) {
 
 // value: SorobanClient.xdr.ScVal
 // Returns: string | undefined
-export function scvalToString(value) {
+ function scvalToString(value) {
   return value.bytes().toString();
 }
 
-export function contractTransaction(
+ function contractTransaction(
   sourceAccount,
   contractId,
   method,
   args = [],
   txOptions = {}
 ) {
-  let args = args || [];
+  let myArgs = args || [];
   const contract = SorobanClient.Contract(contractId);
 
   return new SorobanClient.TransactionBuilder(
     sourceAccount,
     txOptions
   )
-    .addOperation(contract.call(method, ...args))
+    .addOperation(contract.call(method, ...myArgs))
     .setTimeout(txOptions.timeout || SorobanClient.TimeoutInfinite)
     .build();
 }
@@ -229,7 +230,7 @@ export function contractTransaction(
 //   timeout: number,
 // }
 // Returns: 
-export async function submitTransaction(tx, txOptions) {
+ async function submitTransaction(tx, txOptions) {
   const response = await txOptions.server.sendTransaction(tx);
   const sleepTime = Math.min(1000, txOptions.timeout);
   for (let i = 0; i < txOptions.timeout; i += sleepTime) {
@@ -270,15 +271,15 @@ export async function submitTransaction(tx, txOptions) {
   throw new Error(`Transaction ${id} timed out after ${txOptions.timeout}ms`);
 }
 
-export async function getFootprint(tx, txOptions) {
+ async function getFootprint(tx, txOptions) {
   return await txOptions.server.prepareTransaction(tx);
 }
 
-export function txHashHexStr(tx) {
+ function txHashHexStr(tx) {
   return tx.hash().toString("hex");
 }
 
-export function txToBase64(tx) {
+ function txToBase64(tx) {
   return tx.toEnvelope().toXDR().toString("base64");
   // or tx.toEnvelope().toXDR("base64");
 }
@@ -286,3 +287,12 @@ export function txToBase64(tx) {
 async function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+async function main() {
+  let txOptions = getDefaultTxOptions();
+
+  const result  = await loadAccount(pk, txOptions);
+  console.dir(result);
+}
+
+main();

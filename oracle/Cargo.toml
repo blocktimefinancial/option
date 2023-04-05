@@ -24,3 +24,13 @@ soroban-sdk = "0.7.0"
 [dev_dependencies]
 soroban-sdk = { version = "0.7.0", features = ["testutils"] }
 #soroban-auth = { path = "../../soroban-auth", features = ["testutils"] }
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+debug = 0
+strip = "symbols"
+debug-assertions = false
+panic = "abort"
+codegen-units = 1
+lto = true
