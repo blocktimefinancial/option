@@ -21,7 +21,7 @@
 use soroban_sdk::{contractimpl, contracttype, Address, BytesN, Env, Vec};
 
 mod token {
-    soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
+    soroban_sdk::contractimport!(file = "../../soroban_token_spec.wasm");
 }
 
 #[derive(Clone)]
@@ -112,7 +112,7 @@ impl PutOptionContract {
     pub fn init(
         env: Env,
     ) {
-        Env::set_data(DataKey::Init, true);
+        env.storage().set(&DataKey::Init, &true);
     }
     
     pub fn list(
@@ -319,51 +319,52 @@ fn is_initialized(env: &Env) -> bool {
 }
 
 // Limited gain / loss option
-fn put_px(strk_px, px: i128) {
+fn put_px(strk_px: i128, px: i128) -> i128 {
     if px < 0 {
         panic!("Price can't be < 0");
     }
-    if( px >= strk_px) return 0;
+    if px >= strk_px { return 0; }
+
     return strk_px - px;
 }
 
 // Unlimited gain / loss option
-fn call_px(strk_px, px: i128) {
+fn call_px(strk_px: i128, px: i128) -> i128 {
     if px < 0 {
         panic!("Price can't be < 0");
     }
-    if( px <= strk_px) return 0;
+    if px <= strk_px { return 0; }
     return px - strk_px;
 }
 
 // Limited gain / loss spread
-fn call_sprd_px(strk1_px, strk2_px, px: i128) {
+fn call_sprd_px(strk1_px: i128, strk2_px: i128, px: i128) -> i128 {
     if px < 0 {
         panic!("Price can't be < 0");
     }
     if strk1_px > strk2_px {
         panic!("strk1_px > strk2_px");
     }
-    if( px <= strk1_px) return 0;
-    if( px >= strk2_px) return strk2_px - strk1_px;
+    if px <= strk1_px { return 0; }
+    if px >= strk2_px { return strk2_px - strk1_px; }
     return px - strk1_px;
 }
 
 // Limited gain / loss spread
-fn put_sprd_px(strk1_px, strk2_px, px: i128) {
+fn put_sprd_px(strk1_px: i128, strk2_px: i128, px: i128) -> i128 {
     if px < 0 {
         panic!("Price can't be < 0");
     }
     if strk1_px > strk2_px {
         panic!("strk1_px > strk2_px");
     }
-    if( px >= strk2_px) return 0;
-    if( px <= strk1_px) return strk2_px - strk1_px;
+    if px >= strk2_px { return 0; }
+    if px <= strk1_px { return strk2_px - strk1_px; }
     return strk2_px - px;
 }
 
 // Limited gain / loss spread
-fn butterfly_px(strk1_px, strk2_px, strk3_px, px: i128) {
+fn butterfly_px(strk1_px: i128, strk2_px: i128, strk3_px: i128, px: i128) -> i128 {
     if px < 0 {
         panic!("Price can't be < 0");
     }
@@ -373,14 +374,14 @@ fn butterfly_px(strk1_px, strk2_px, strk3_px, px: i128) {
     if strk2_px > strk3_px {
         panic!("strk2_px > strk3_px");
     }
-    if( px <= strk1_px) return 0;
-    if( px >= strk3_px) return 0;
-    if( px <= strk2_px) return px - strk1_px;
+    if px <= strk1_px { return 0; }
+    if px >= strk3_px { return 0;}
+    if px <= strk2_px { return px - strk1_px; }
     return strk3_px - px;
 }
 
 // Limited gain / loss spread
-fn condor_px(strk1_px, strk2_px, strk3_px, strk4_px, px: i128) {
+fn condor_px(strk1_px: i128, strk2_px: i128, strk3_px: i128, strk4_px: i128, px: i128) -> i128 {
     if px < 0 {
         panic!("Price can't be < 0");
     }
@@ -393,33 +394,33 @@ fn condor_px(strk1_px, strk2_px, strk3_px, strk4_px, px: i128) {
     if strk3_px > strk4_px {
         panic!("strk3_px > strk4_px");
     }
-    if( px <= strk1_px) return strk2_px - strk1_px;
-    if( px >= strk4_px) return strk4_px - strk3_px;
-    if( px <= strk2_px) return strk2_px - px;
-    if( px >= strk3_px) return px - strk3_px;
+    if px <= strk1_px {return strk2_px - strk1_px;}
+    if px >= strk4_px {return strk4_px - strk3_px;}
+    if px <= strk2_px {return strk2_px - px;}
+    if px >= strk3_px {return px - strk3_px;}
     return 0;
 }
 
 // Unlimited gain for long, unlimited loss for short
-fn strangle_px(strk1_px, strk2_px, px: i128) {
+fn strangle_px(strk1_px: i128, strk2_px: i128, px: i128) -> i128 {
     if px < 0 {
         panic!("Price can't be < 0");
     }
     if strk1_px > strk2_px {
         panic!("strk1_px > strk2_px");
     }
-    if( px < strk1_px) return strk1 - px;
-    if( px > strk2_px) return px - strk2_px;
+    if px < strk1_px { return strk1_px - px;}
+    if px > strk2_px { return px - strk2_px;}
     return 0;
 }
 
 // Unlimited gain for long, unlimited loss for short
-fn straddle_px(strk1_px, px: i128) {
+fn straddle_px(strk1_px: i128, px: i128) -> i128 {
     if px < 0 {
         panic!("Price can't be < 0");
     }
     
-    let mut diff = px - strk1_px;
+    let diff = px - strk1_px;
     return diff.abs();
 }
 

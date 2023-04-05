@@ -13,12 +13,10 @@ crate-type = ["cdylib"]
 doctest = false
 
 [features]
-testutils = ["soroban-auth/testutils"]
+testutils = ["soroban-sdk/testutils"]
 
 [dependencies]
-soroban-sdk = { path = "../soroban-sdk", features = ["testutils"] }
-soroban-auth = { path = "../soroban-auth", features = ["testutils"] }
+soroban-sdk = "0.7.0"
 
 [dev_dependencies]
-soroban-sdk = { path = "../soroban-sdk", features = ["testutils"] }
-soroban-auth = { path = "../soroban-auth", features = ["testutils"] }
+soroban-sdk = { version = "0.7.0", features = ["testutils"] }
