@@ -1,10 +1,12 @@
 #![no_std]
 
-use soroban_sdk::{contractimpl, contracttype, Address, BytesN, Env, Vec};
+use soroban_sdk::{contractimpl, contracttype, Env};
 
 mod token {
-    soroban_sdk::contractimport!(file = "../soroban_token_spec.wasm");
+    soroban_sdk::contractimport!(file = "../../soroban_token_spec.wasm");
 }
+
+pub struct OracleContract;
 
 #[derive(Clone)]
 #[contracttype]
@@ -19,18 +21,26 @@ impl OracleContract {
     pub fn init(
         env: Env,
     ) {
-        Env::set_data(DataKey::Init, true);
+        if is_initialized(&env) == true {
+            panic!("Contract already initialized");
+        }
+        env.storage().set(&DataKey::Init, &true);
     }
 
-    pub fn update(env: Env, quote: BytesN) {
-
-        Env::set_data(DataKey::Quote, quote);
+    pub fn update(env: Env, quote: i64) {
+        if is_initialized(&env) == false {
+            panic!("Contract not initialized");
+        }
+        env.storage().set(&DataKey::Quote, &quote);
         
     }
 
-    pub fn retrieve() {
-        let quote = Env::get_data(DataKey::Quote);
-        Env::set_data(DataKey::Quote, quote);
+    pub fn retrieve(env: Env) {
+        if is_initialized(&env) == false {
+            panic!("Contract not initialized");
+        }
+        let quote: i64 = env.storage().get(&DataKey::Quote).unwrap_or(Ok(0)).unwrap();
+        env.storage().set(&DataKey::Quote, &quote);
     }
 }
 

@@ -1,0 +1,26 @@
+[package]
+name = "soroban-oracle"
+version = "0.0.0"
+authors = ["Block TIme Financial, Inc <info@blocktimefinancial.com>"]
+license = "MIT"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[lib]
+crate-type = ["cdylib"]
+doctest = false
+
+[features]
+testutils = ["soroban-sdk/testutils"]
+
+[dependencies]
+soroban-sdk = "0.7.0"
+
+##soroban-sdk = { path = "../../soroban-sdk", features = ["testutils"] }
+#soroban-auth = { path = "../../soroban-auth", features = ["testutils"] }
+
+[dev_dependencies]
+soroban-sdk = { version = "0.7.0", features = ["testutils"] }
+#soroban-auth = { path = "../../soroban-auth", features = ["testutils"] }
