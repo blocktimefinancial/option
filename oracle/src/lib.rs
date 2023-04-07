@@ -27,7 +27,7 @@ impl OracleContract {
         env.storage().set(&DataKey::Init, &true);
     }
 
-    pub fn update(env: Env, quote: i64) {
+    pub fn update(env: Env, quote: i128) {
         if is_initialized(&env) == false {
             panic!("Contract not initialized");
         }
@@ -35,12 +35,13 @@ impl OracleContract {
         
     }
 
-    pub fn retrieve(env: Env) {
+    pub fn retrieve(env: Env) -> i128 {
         if is_initialized(&env) == false {
             panic!("Contract not initialized");
         }
-        let quote: i64 = env.storage().get(&DataKey::Quote).unwrap_or(Ok(0)).unwrap();
-        env.storage().set(&DataKey::Quote, &quote);
+        let quote: i128 = env.storage().get(&DataKey::Quote).unwrap_or(Ok(0)).unwrap();
+        
+        quote
     }
 }
 

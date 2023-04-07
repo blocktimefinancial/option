@@ -1,0 +1,14 @@
+{
+  "name": "samples",
+  "version": "1.0.0",
+  "description": "",
+  "main": "getHealth.js",
+  "scripts": {
+    "test": "node getHealth.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "soroban-client": "^0.5.0"
+  }
+}
