@@ -23,6 +23,11 @@ Creation Transaction Hash: 0472a0c7c46cc78b24c8095c6011c159ba2badb43ab02521e8e08
 Install WASM Hash: 78728a92f5330f7b368a745eba1db0a3888175574a1dbf901af2ab6d69a331ff
 ## Price Pump Node JS App
 
-
+## Platform Integration
+We're integrating the Soroban Smart Contract functionality into our platform.  The BTF Platform
+provides web based access to blockchain technology for regulated businesses such as Investment Banks,
+Broker/Dealers, Banks, Credit Unions, and Law firms.  Here's a quick video on how we've started
+the integration process.
+[Soroban Video](https://www.loom.com/share/86d5eb4ff9fa4842ae7b58df44d2145d)
 #### Disclaimer:
 Please see the DISCLAIMER.md file in this repo
