@@ -25,4 +25,4 @@ Install WASM Hash: 78728a92f5330f7b368a745eba1db0a3888175574a1dbf901af2ab6d69a33
 
 
 #### Disclaimer:
-
+Please see the DISCLAIMER.md file in this repo
