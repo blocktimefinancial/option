@@ -28,14 +28,18 @@ settlement price from the oracle.
 
 ## Oracle Smart Contract
 Current ContractId: f99494aa0392e3da554155208e8e184d6f84eb02444070ea3bf3f2bc1aa96558
-Creation Transaction Hash: 0472a0c7c46cc78b24c8095c6011c159ba2badb43ab02521e8e08ab19af66271
-Install WASM Transaction Hash: 78728a92f5330f7b368a745eba1db0a3888175574a1dbf901af2ab6d69a331ff
+Creation Transaction Hash: 5f4518d455aab4451e6ecd0ccfbeb8e7a7e65ba99de543c5fae30cf24121dd6f
+Install WASM Transaction Hash: 83a2fd36151972693ca93e6d149852aa3bcb4d242f97ca27dfaa6dd913e707f0
 
 #### What it does
 The Oracle smart contract acts as the source of truth for pricing.  Other smart contracts that trust
 this oracle can query it for prices.  Its "truthy ness" is only based on the inputs and the trustworthiness
-of the implementor. [Video Soroban-CLI Invoke Functions, Update, Retrieve](https://www.loom.com/share/934ae32d84624cfc83e120a5766cf60a)
+of the implementor. 
+##### Videos 
+[Video Soroban-CLI Invoke Functions, Update, Retrieve](https://www.loom.com/share/934ae32d84624cfc83e120a5766cf60a)
+
 [Video NodeJS Invoke Functions, Update, Retrieve](https://www.loom.com/share/10707c09005b4e1aaf3e11fd31fbf297)
+
 ## Price Pump Node JS App
 This is a NodeJS application that gets inputs from public sources; in this sample, the yahoo-finance
 pricing is used.  This is ONLY for testing purposes!!  In production, a real-time exchange feed should
