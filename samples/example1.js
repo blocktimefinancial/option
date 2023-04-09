@@ -50,7 +50,47 @@ function bigNumberFromBytes(signed, ...bytes) {
     b <<= BigInt(8);
     b |= BigInt(byte);
   }
-  return BigNumber(b.toString()).multipliedBy(sign);
+  return new BigNumber(b.toString()).multipliedBy(sign);
+}
+
+function toScvSymbol(value) {
+  try {
+    value = value.toString();
+  } catch (e) {
+    throw new Error("Invalid value for scvSymbol");
+  }
+  if (value.length > 32) {
+    throw new Error("scvSymbol value too long, max 32 bytes");
+  }
+  return xdr.ScVal.scvSymbol(value);
+}
+
+function toScvU32(value) {
+  let _v1 = BigNumber(value);
+  if (_v1.isNaN()) {
+    throw new Error("Invalid value for scvU32");
+  }
+  _v1 = _v1.toFixed(0);
+  if (_v1 > 4294967295) {
+    throw new Error("scvU32 value too large, max 4294967295");
+  }
+  return xdr.ScVal.scvU32(value);
+}
+function toScvU64(value) {
+  let _v1 = BigNumber(value);
+  if (_v1.isNaN()) {
+    throw new Error("Invalid value for scvU64");
+  }
+  _v1 = _v1.toFixed(0);
+  if (_v1 > BigNumber(18446744073709551615n)) {
+    throw new Error("scvU64 value too large, max 18446744073709551615");
+  }
+  return xdr.ScVal.scvU64(new xdr.Uint64(value, value));
+}
+
+function toSvcAddress(address) {
+  // TODO: validate address
+  return new SorobanClient.Address(address).toScVal();
 }
 
 // value: BigNumber
@@ -251,8 +291,11 @@ function createContractTransaction(sourceAccount, contractId, method, ...args) {
 }
 
 // A demo smart contract that takes an i128 as a parameter and returns it
-const contractId =
+const contractIdold =
   "11c257392f779f95a3ea9603b748d60be2296c23800824f53c7638120b39daba";
+
+const contractId =
+  "fe923237f6fac282a06f9b756d488d9fa312b990a705dfa9388ec35479375598";
 
 async function main() {
   // Double check we have good connectivity to the network
@@ -273,8 +316,12 @@ async function main() {
   let tx = createContractTransaction(
     source, // Source account
     contractId, // Contract ID
-    "update", // Method name
-    bigNumberToI128(BigNumber(8675309).shiftedBy(7)) // Method arguments
+    "retrieve", // Method name
+    // bigNumberToI128(new BigNumber(8675309)),
+    // bigNumberToI128(new BigNumber(5551212)),
+    // bigNumberToI128(new BigNumber(104)),
+    // bigNumberToI128(new BigNumber(32))
+    // Method arguments
   );
 
   tx = await server.prepareTransaction(tx, SorobanClient.Networks.FUTURENET);
@@ -323,4 +370,5 @@ async function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+//console.dir(toScvSymbol("2.0"));
 main();

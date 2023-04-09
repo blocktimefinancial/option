@@ -1,0 +1,111 @@
+[
+  {
+    "type": "struct",
+    "doc": "",
+    "name": "UpdData",
+    "fields": [
+      {
+        "doc": "",
+        "name": "flags",
+        "value": {
+          "type": "i128"
+        }
+      },
+      {
+        "doc": "",
+        "name": "price",
+        "value": {
+          "type": "i128"
+        }
+      },
+      {
+        "doc": "",
+        "name": "timestamp",
+        "value": {
+          "type": "i128"
+        }
+      },
+      {
+        "doc": "",
+        "name": "token",
+        "value": {
+          "type": "i128"
+        }
+      }
+    ]
+  },
+  {
+    "type": "union",
+    "doc": "",
+    "name": "DataKey",
+    "cases": [
+      {
+        "doc": "",
+        "name": "Init",
+        "values": []
+      },
+      {
+        "doc": "",
+        "name": "Quote",
+        "values": []
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "doc": "",
+    "name": "init",
+    "inputs": [],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "doc": "",
+    "name": "update",
+    "inputs": [
+      {
+        "doc": "",
+        "name": "token",
+        "value": {
+          "type": "i128"
+        }
+      },
+      {
+        "doc": "",
+        "name": "price",
+        "value": {
+          "type": "i128"
+        }
+      },
+      {
+        "doc": "",
+        "name": "timestamp",
+        "value": {
+          "type": "i128"
+        }
+      },
+      {
+        "doc": "",
+        "name": "flags",
+        "value": {
+          "type": "i128"
+        }
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "doc": "",
+    "name": "retrieve",
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "vec",
+        "element": {
+          "type": "i128"
+        }
+      }
+    ]
+  }
+]

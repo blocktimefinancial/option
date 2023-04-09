@@ -1,0 +1,379 @@
+[
+  {
+    "type": "union",
+    "doc": "",
+    "name": "DataKey",
+    "cases": [
+      {
+        "doc": "",
+        "name": "Init",
+        "values": []
+      },
+      {
+        "doc": "",
+        "name": "BAdr",
+        "values": []
+      },
+      {
+        "doc": "",
+        "name": "SAdr",
+        "values": []
+      },
+      {
+        "doc": "",
+        "name": "SDep",
+        "values": []
+      },
+      {
+        "doc": "",
+        "name": "BDep",
+        "values": []
+      },
+      {
+        "doc": "",
+        "name": "Balance",
+        "values": []
+      },
+      {
+        "doc": "",
+        "name": "Strike",
+        "values": []
+      },
+      {
+        "doc": "",
+        "name": "MktPrice",
+        "values": []
+      },
+      {
+        "doc": "",
+        "name": "Expiration",
+        "values": []
+      },
+      {
+        "doc": "",
+        "name": "Oracle",
+        "values": []
+      },
+      {
+        "doc": "",
+        "name": "Token",
+        "values": []
+      },
+      {
+        "doc": "",
+        "name": "Trds",
+        "values": []
+      },
+      {
+        "doc": "",
+        "name": "Admin",
+        "values": []
+      },
+      {
+        "doc": "",
+        "name": "TradePx",
+        "values": []
+      },
+      {
+        "doc": "",
+        "name": "TradeQty",
+        "values": []
+      }
+    ]
+  },
+  {
+    "type": "union",
+    "doc": "",
+    "name": "TimeBoundKind",
+    "cases": [
+      {
+        "doc": "",
+        "name": "Before",
+        "values": []
+      },
+      {
+        "doc": "",
+        "name": "After",
+        "values": []
+      }
+    ]
+  },
+  {
+    "type": "struct",
+    "doc": "",
+    "name": "TimeBound",
+    "fields": [
+      {
+        "doc": "",
+        "name": "kind",
+        "value": {
+          "type": "custom",
+          "name": "TimeBoundKind"
+        }
+      },
+      {
+        "doc": "",
+        "name": "timestamp",
+        "value": {
+          "type": "u64"
+        }
+      }
+    ]
+  },
+  {
+    "type": "struct",
+    "doc": "",
+    "name": "Trade",
+    "fields": [
+      {
+        "doc": "",
+        "name": "buyer",
+        "value": {
+          "type": "address"
+        }
+      },
+      {
+        "doc": "",
+        "name": "date_time",
+        "value": {
+          "type": "u64"
+        }
+      },
+      {
+        "doc": "",
+        "name": "price",
+        "value": {
+          "type": "i128"
+        }
+      },
+      {
+        "doc": "",
+        "name": "qty",
+        "value": {
+          "type": "i128"
+        }
+      },
+      {
+        "doc": "",
+        "name": "seller",
+        "value": {
+          "type": "address"
+        }
+      }
+    ]
+  },
+  {
+    "type": "struct",
+    "doc": "",
+    "name": "Position",
+    "fields": [
+      {
+        "doc": "",
+        "name": "acct",
+        "value": {
+          "type": "address"
+        }
+      },
+      {
+        "doc": "",
+        "name": "pos",
+        "value": {
+          "type": "i128"
+        }
+      }
+    ]
+  },
+  {
+    "type": "struct",
+    "doc": "",
+    "name": "PutOption",
+    "fields": [
+      {
+        "doc": "",
+        "name": "exp",
+        "value": {
+          "type": "custom",
+          "name": "TimeBound"
+        }
+      },
+      {
+        "doc": "",
+        "name": "opt_type",
+        "value": {
+          "type": "u32"
+        }
+      },
+      {
+        "doc": "",
+        "name": "stk",
+        "value": {
+          "type": "i128"
+        }
+      },
+      {
+        "doc": "",
+        "name": "token",
+        "value": {
+          "type": "bytesN",
+          "n": 32
+        }
+      },
+      {
+        "doc": "",
+        "name": "trades",
+        "value": {
+          "type": "vec",
+          "element": {
+            "type": "address"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "doc": "",
+    "name": "init",
+    "inputs": [],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "doc": "",
+    "name": "list",
+    "inputs": [
+      {
+        "doc": "",
+        "name": "strike",
+        "value": {
+          "type": "i128"
+        }
+      },
+      {
+        "doc": "",
+        "name": "exp",
+        "value": {
+          "type": "u64"
+        }
+      },
+      {
+        "doc": "",
+        "name": "oracle",
+        "value": {
+          "type": "address"
+        }
+      },
+      {
+        "doc": "",
+        "name": "token",
+        "value": {
+          "type": "bytesN",
+          "n": 32
+        }
+      },
+      {
+        "doc": "",
+        "name": "admin",
+        "value": {
+          "type": "address"
+        }
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "doc": "",
+    "name": "specs",
+    "inputs": [],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "doc": "",
+    "name": "trade",
+    "inputs": [
+      {
+        "doc": "",
+        "name": "seller_adr",
+        "value": {
+          "type": "address"
+        }
+      },
+      {
+        "doc": "",
+        "name": "token",
+        "value": {
+          "type": "bytesN",
+          "n": 32
+        }
+      },
+      {
+        "doc": "",
+        "name": "qty",
+        "value": {
+          "type": "i128"
+        }
+      },
+      {
+        "doc": "",
+        "name": "buyer_adr",
+        "value": {
+          "type": "address"
+        }
+      },
+      {
+        "doc": "",
+        "name": "price",
+        "value": {
+          "type": "i128"
+        }
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "doc": "",
+    "name": "upd_px",
+    "inputs": [
+      {
+        "doc": "",
+        "name": "token",
+        "value": {
+          "type": "bytesN",
+          "n": 32
+        }
+      },
+      {
+        "doc": "",
+        "name": "px",
+        "value": {
+          "type": "i128"
+        }
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "doc": "",
+    "name": "mtm",
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "vec",
+        "element": {
+          "type": "i128"
+        }
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "doc": "",
+    "name": "settle",
+    "inputs": [],
+    "outputs": []
+  }
+]

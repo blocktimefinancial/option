@@ -26,6 +26,7 @@ const sk = "SCIGOGUPFOZSEBVZBEF3BJL6SZGVSFYANQ6BZE6PTTQ7S4YXYDPY4JHL";
 // const cnt2 = "96b3e59528066b73285a6308f2dd8a053238e8e50f246b462a09a698a6def759";
 
 const cnt3 = "f99494aa0392e3da554155208e8e184d6f84eb02444070ea3bf3f2bc1aa96558";
+const oracle1 = "fe923237f6fac282a06f9b756d488d9fa312b990a705dfa9388ec35479375598";
 
 const server = new SorobanClient.Server(remoteServerUrl, { allowHttp: true });
 let xdr = SorobanClient.xdr;
