@@ -186,6 +186,10 @@ async function getTransaction(hash) {
   return response.data;
 }
 
+async function loadAccount(pk) {
+  return await server.getAccount(pk);
+}
+
 function getLedgerKeyAccount(address) {
   // We can use the `StrKey` library here to decode the address into the public
   // key.
@@ -200,7 +204,7 @@ function getLedgerKeyAccount(address) {
 }
 
 // New way of loading an account without using the soroban client
-async function loadAccount(accountId) {
+async function loadAccount1(accountId) {
   const ledgerKey = getLedgerKeyAccount(accountId);
   const url = `https://rpc-futurenet.stellar.org:443`;
   const response = await axios.post(url, {
@@ -302,25 +306,19 @@ async function main() {
   console.dir(await getHealth());
 
   // Load the account
-  let account = await loadAccount(
+  let source = await loadAccount(
     "GDZ4CDLVSHQIAXRBTPHTPJ5MSCC6XO4R4IXRGRQ6VOVV2H2HFSQJHRYH"
-  );
-
-  // Create a source account object from the account response
-  let source = new SorobanClient.Account(
-    "GDZ4CDLVSHQIAXRBTPHTPJ5MSCC6XO4R4IXRGRQ6VOVV2H2HFSQJHRYH",
-    account.sequence
   );
 
   // Create a transaction to call the contract
   let tx = createContractTransaction(
     source, // Source account
     contractId, // Contract ID
-    "retrieve", // Method name
-    // bigNumberToI128(new BigNumber(8675309)),
-    // bigNumberToI128(new BigNumber(5551212)),
-    // bigNumberToI128(new BigNumber(104)),
-    // bigNumberToI128(new BigNumber(32))
+    "update", // Method name
+    bigNumberToI128(new BigNumber(8675309)),
+    bigNumberToI128(new BigNumber(5551212)),
+    bigNumberToI128(new BigNumber(104)),
+    bigNumberToI128(new BigNumber(32))
     // Method arguments
   );
 

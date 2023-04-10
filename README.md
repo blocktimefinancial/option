@@ -53,6 +53,10 @@ We're integrating the Soroban Smart Contract functionality into our platform.  T
 provides web-based access to blockchain technology for regulated businesses such as Investment Banks,
 Broker/Dealers, Banks, Credit Unions, and Law firms.  Here's a quick video on how we've started
 the integration process.
+
+##### Platform Integration Videos
 [Soroban Video](https://www.loom.com/share/9a13bd19491b443f8c145040bca0d105)
+
+[Soroban Smart Contract calls from BTF Platform](https://www.loom.com/share/ec6ffaaf9b5340bc85b8d005edf45900)
 #### Disclaimer:
 Please see the DISCLAIMER.md file in this repo
