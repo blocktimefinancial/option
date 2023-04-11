@@ -27,7 +27,7 @@ When the option expiry date has passed, each party may remove any remaining depo
 settlement price from the oracle.
 
 ## Oracle Smart Contract
-Current ContractId: f99494aa0392e3da554155208e8e184d6f84eb02444070ea3bf3f2bc1aa96558
+Current ContractId: cd0ca2f721d91df334b79fb1e043920919ed0c6b09f930af5048a50930fb7f44
 Creation Transaction Hash: 5f4518d455aab4451e6ecd0ccfbeb8e7a7e65ba99de543c5fae30cf24121dd6f
 Install WASM Transaction Hash: 83a2fd36151972693ca93e6d149852aa3bcb4d242f97ca27dfaa6dd913e707f0
 
