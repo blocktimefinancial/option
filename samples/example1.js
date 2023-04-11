@@ -298,9 +298,11 @@ function createContractTransaction(sourceAccount, contractId, method, ...args) {
 const contractIdold =
   "11c257392f779f95a3ea9603b748d60be2296c23800824f53c7638120b39daba";
 
-const contractId =
+const contractIdolder =
   "fe923237f6fac282a06f9b756d488d9fa312b990a705dfa9388ec35479375598";
 
+  const contractId = "cd0ca2f721d91df334b79fb1e043920919ed0c6b09f930af5048a50930fb7f44";
+  
 async function main() {
   // Double check we have good connectivity to the network
   console.dir(await getHealth());
@@ -314,11 +316,11 @@ async function main() {
   let tx = createContractTransaction(
     source, // Source account
     contractId, // Contract ID
-    "update", // Method name
-    bigNumberToI128(new BigNumber(8675309)),
-    bigNumberToI128(new BigNumber(5551212)),
-    bigNumberToI128(new BigNumber(104)),
-    bigNumberToI128(new BigNumber(32))
+    "retrieve", // Method name
+    // bigNumberToI128(new BigNumber(8675309)),
+    // bigNumberToI128(new BigNumber(5551212)),
+    // bigNumberToI128(new BigNumber(104)),
+    // bigNumberToI128(new BigNumber(32))
     // Method arguments
   );
 

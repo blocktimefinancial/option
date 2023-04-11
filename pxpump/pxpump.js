@@ -18,6 +18,9 @@ const contractId =
 const pk = "GDZ4CDLVSHQIAXRBTPHTPJ5MSCC6XO4R4IXRGRQ6VOVV2H2HFSQJHRYH";
 const secret = "SCIGOGUPFOZSEBVZBEF3BJL6SZGVSFYANQ6BZE6PTTQ7S4YXYDPY4JHL";
 
+// These conversion functions are from the soroban-example-dapp project
+// and converted from typescript to javascript.
+// Thanks Paul and Estaban!
 function bigintToBuf(bn) {
   var hex = BigInt(bn).toString(16).replace(/^-/, "");
   if (hex.length % 2) {
