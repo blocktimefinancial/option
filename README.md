@@ -35,6 +35,14 @@ Install WASM Transaction Hash: 83a2fd36151972693ca93e6d149852aa3bcb4d242f97ca27d
 The Oracle smart contract acts as the source of truth for pricing.  Other smart contracts that trust
 this oracle can query it for prices.  Its "truthy ness" is only based on the inputs and the trustworthiness
 of the implementor. 
+
+#### Soroban-CLI
+Cmd to retrieve a price
+```sh
+soroban contract invoke --id cd0ca2f721d91df334b79fb1e043920919ed0c6b09f930af5048a50930fb7f44 \
+--rpc-url https://rpc-futurenet.stellar.org:443/ --network-passphrase 'Test SDF Future Network ; October 2022' \
+--source SCIGOGUPFOZSEBVZBEF3BJL6SZGVSFYANQ6BZE6PTTQ7S4YXYDPY4JHL -- retrieve
+```
 ##### Videos 
 [Video Soroban-CLI Invoke Functions, Update, Retrieve](https://www.loom.com/share/934ae32d84624cfc83e120a5766cf60a)
 
