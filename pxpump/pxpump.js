@@ -214,23 +214,41 @@ function toSorobanArgs(quote) {
 
   // TODO: Use a more standard encoding model for types and values
 
+  const marketState = quote.marketState;
+  let flags = 0;
+  let price = 0;
+
+  if (marketState === "PRE") {
+    flags |= 1;
+    price = quote.preMarketPrice;
+    timestamp = quote.preMarketTime.getTime();
+  } else if (marketState === "POST") {
+    flags |= 2;
+    price = quote.regularMarketPreviousClose;
+    timestamp = quote.regularMarketTime.getTime();
+  } else if (marketState === "REGULAR") {
+    flags |= 4;
+    price = quote.regularMarketPrice;
+    timestamp = quote.regularMarketTime.getTime();
+  }
+
   // from the quote.  We'll just stringify the quote for now.
   let symbolCode = bigNumberToI128(new BigNumber(1));
 
   // We know that Soroban VM doesn't support floating point numbers, so we'll
   // convert numbers to i128 values with 7 decimal places of precision.
-  let price = bigNumberToI128(
-    new BigNumber(quote.regularMarketPrice * 10000000)
+  price = bigNumberToI128(
+    new BigNumber(price * 10000000)
   );
 
   // Dates are also not supported, so we'll convert them to timestamps in
   // the same format as Soroban VM timestamps.
-  let date = bigNumberToI128(new BigNumber(quote.regularMarketTime.getTime()));
+  timestamp = bigNumberToI128(new BigNumber(timestamp));
 
   //Flags are a bit field, so we'll just set the third bit
-  let flags = bigNumberToI128(new BigNumber(4));
+  flags = bigNumberToI128(new BigNumber(4));
 
-  return [symbolCode, price, date, flags];
+  return [symbolCode, price, timestamp, flags];
 }
 
 // Update the smart contract with the latest quote

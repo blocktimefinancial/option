@@ -96,51 +96,37 @@ function bigNumberFromBytes(signed, ...bytes) {
   }
   return BigNumber(b.toString()).multipliedBy(sign);
 }
+
 function bigintToBuf(bn) {
-    var hex = BigInt(bn).toString(16).replace(/^-/, "");
-    if (hex.length % 2) {
-      hex = "0" + hex;
-    }
-  
-    var len = hex.length / 2;
-    var u8 = new Uint8Array(len);
-  
-    var i = 0;
-    var j = 0;
-    while (i < len) {
-      u8[i] = parseInt(hex.slice(j, j + 2), 16);
-      i += 1;
-      j += 2;
-    }
-  
-    if (bn < BigInt(0)) {
-      // Set the top bit
-      u8[0] |= 0x80;
-    }
-  
-    return Buffer.from(u8);
+  var hex = BigInt(bn).toString(16).replace(/^-/, "");
+  if (hex.length % 2) {
+    hex = "0" + hex;
   }
-  
-  function bigNumberFromBytes(signed, ...bytes) {
-    let sign = 1;
-    if (signed && bytes[0] === 0x80) {
-      // top bit is set, negative number.
-      sign = -1;
-      bytes[0] &= 0x7f;
-    }
-    let b = BigInt(0);
-    for (let byte of bytes) {
-      b <<= BigInt(8);
-      b |= BigInt(byte);
-    }
-    return new BigNumber(b.toString()).multipliedBy(sign);
+
+  var len = hex.length / 2;
+  var u8 = new Uint8Array(len);
+
+  var i = 0;
+  var j = 0;
+  while (i < len) {
+    u8[i] = parseInt(hex.slice(j, j + 2), 16);
+    i += 1;
+    j += 2;
   }
-  
+
+  if (bn < BigInt(0)) {
+    // Set the top bit
+    u8[0] |= 0x80;
+  }
+
+  return Buffer.from(u8);
+}
 // value: BigNumber
 // returns: SorobanClient.xdr.ScVal
 function bigNumberToI128(value) {
   const b = BigInt(value.toFixed(0));
   const buf = bigintToBuf(b);
+
   if (buf.length > 16) {
     throw new Error("BigNumber overflows i128");
   }
@@ -153,32 +139,45 @@ function bigNumberToI128(value) {
   // left-pad with zeros up to 16 bytes
   let padded = Buffer.alloc(16);
   buf.copy(padded, padded.length - buf.length);
-  console.debug({ value: value.toString(), padded });
 
   if (value.isNegative()) {
     // Set the top bit
     padded[0] |= 0x80;
   }
 
-  const hi = new xdr.Uint64(
-    bigNumberFromBytes(false, ...padded.slice(4, 8)).toNumber(),
-    bigNumberFromBytes(false, ...padded.slice(0, 4)).toNumber()
-  );
-  const lo = new xdr.Uint64(
-    bigNumberFromBytes(false, ...padded.slice(12, 16)).toNumber(),
-    bigNumberFromBytes(false, ...padded.slice(8, 12)).toNumber()
-  );
+  const hihi = bigNumberFromBytes(false, ...padded.slice(0, 4)).toNumber();
+  const hilo = bigNumberFromBytes(false, ...padded.slice(4, 8)).toNumber();
+  console.log("hihi", hihi);
+  console.log("hilo", hilo);
 
-  return xdr.ScVal.scvI128(new xdr.Int128Parts({ lo, hi }));
+  const hi = new xdr.Uint64(hilo, hihi);
+
+  let lohi = bigNumberFromBytes(false, ...padded.slice(8, 12)).toNumber();
+  let lolo = bigNumberFromBytes(false, ...padded.slice(12, 16)).toNumber();
+  console.log("lohi", lohi);
+  console.log("lolo", lolo);
+
+  const lo = new xdr.Uint64(lolo, lohi);
+  console.log("lo", util.inspect(lo, false, 5));
+
+  const x = new xdr.Int128Parts({ lo, hi });
+  
+  console.log("x", util.inspect(x, false, 5));
+
+  return new xdr.ScVal.scvI128(x);
 }
 
+// A ten digital number works
+//const b1 = new BigNumber("1234567890");
+
+// A twenty digital number does not work, pos or neg
 // FIXME: Not working
-const b1 = new BigNumber(12345678901234567890n);
+const b1 = new BigNumber("2147483648");
 console.log("b1", util.inspect(b1, false, 5), b1.toString());
-const a1 = bigNumberToI128(b1);
-console.log("a1", util.inspect(a1, false, 5), scvalToBigNumber(a1).toString());
-const a2 = scvalToBigNumber(a1);
-console.log("a2", util.inspect(a2, false, 5), scvalToBigNumber(a2).toString());
+const scv1 = bigNumberToI128(b1);
+console.log("scv1", util.inspect(scv1, false, 5), scvalToBigNumber(scv1));
+const b2 = scvalToBigNumber(scv1);
+console.log("b2", util.inspect(b2, false, 5), b2.toString());
 
 function unwind() {
   for (
