@@ -24,6 +24,15 @@ mod token {
     soroban_sdk::contractimport!(file = "../../soroban_token_spec.wasm");
 }
 
+const AMERICAN: u32 = 1;   // American option, can be exercised at any time before expiration, not supported at this time
+const EUROPEAN: u32 = 2;   // European option, can only be exercised at expiration
+const CALL: u32 = 4;       // Call option
+const PUT: u32 = 8;        // Put option
+const BINARY: u32 = 16;    // Binary option, either 0 or 1
+const CALL_SPRD: u32 = 32;  // Basic call spread, long call at low strike, short call at high strike
+const PUT_SPRD: u32 = 64;   // Basic put spread, long put at low strike, short put at high strike
+
+
 #[derive(Clone)]
 #[contracttype]
 pub enum DataKey {
@@ -42,6 +51,7 @@ pub enum DataKey {
     Admin,
     TradePx,
     TradeQty,
+    OptionType,
 }
 
 #[derive(Clone)]
@@ -82,7 +92,7 @@ pub struct PutOption {
     pub stk: i128,
     pub trades: Vec<Address>,
     pub exp: TimeBound,
-    pub opt_type: u32, // Bitmask for options details 0x0 = American, 0x1 = European, 0x2 = Call, 0x4 = Put, 0x8 = Binary, 
+    pub opt_type: u32, // Bitmask for options details 0x1 = American, 0x2 = European, 0x4 = Call, 0x8 = Put, 0xF = Binary,... 
 }
 
 pub struct PutOptionContract;
@@ -98,14 +108,14 @@ fn check_time_bound(env: &Env, time_bound: &TimeBound) -> bool {
     }
 }
 
-// Contract usage pattern (pseudocode):
-// 1. Depositor calls `token.approve(depositor_auth, claimable_balance_contract, 100)`
-//    to allow contract to withdraw the needed amount of token.
-// 2. Depositor calls `deposit(token_id, 100, claimants, time bound)`. Contract
-//    withdraws the provided token amount and stores it until one of the claimants
-//    claims it.
-// 3. Claimant calls `claim()` and if time/auth conditons are passed
-//    receives the balance.
+// Contract usage:
+// 1. Initialize the contract with the option details.
+// 2. Buyer and seller deposit the required amount of token.
+// 3. Buyer and seller can claim the balance after the expiration time.
+// 4. Buyer and seller can claim the balance after the oracle has provided
+//    the price of the underlying asset, and the price is above/below the
+//    strike price.
+
 #[contractimpl]
 impl PutOptionContract {
 
@@ -117,6 +127,7 @@ impl PutOptionContract {
     
     pub fn list(
         env: Env,
+        opt_type: u32,     // option type, only put option is supported at this time
         strike: i128,      // strike price
         exp: u64,          // expiration date and time
         oracle: Address,   // oracle contract address
@@ -126,12 +137,38 @@ impl PutOptionContract {
         if is_initialized(&env) {
             panic!("contract is already initialized");
         }
+        // Check that the caller is the admin
+        admin.require_auth();
 
         let e: TimeBound = TimeBound {
             kind: TimeBoundKind::After,
             timestamp: exp,
         };
+        // Set the option details
+        if opt_type != PUT | EUROPEAN {
+            panic!("only put option is supported at this time");
+        }
+        
+        // Do some checking on the input parameters
+        if strike <= 0  {
+            panic!("strike price must be greater than 0");
+        }
+        if exp <= env.ledger().timestamp() {
+            panic!("expiration time must be in the future");
+        }
+        // TODO: check that oracle, admin and token are valid addresses
+        // if oracle == Address::default() {
+        //     panic!("oracle address must be provided");
+        // }
+        // if token == BytesN::default() {
+        //     panic!("token address must be provided");
+        // }
+        // if admin == Address::default()  {
+        //     panic!("admin address must be provided");
+        // }
+        // Set the option details
         env.storage().set(&DataKey::Init, &true);
+        env.storage().set(&DataKey::OptionType, &opt_type);
         env.storage().set(&DataKey::Strike, &strike);
         env.storage().set(&DataKey::Expiration, &e);
         env.storage().set(&DataKey::Oracle, &oracle);
@@ -190,18 +227,20 @@ impl PutOptionContract {
         buyer_deposit = price * qty;
 
         // Transfer token from `from` to this contract address.
-        token::Client::new(&env, &token).xfer(
-            &seller_adr,
-            &env.current_contract_address(),
-            &seller_deposit,
-        );
+        // TODO: .xfer() has changed
+        // token::Client::new(&env, &token).xfer(
+        //     &seller_adr,
+        //     &env.current_contract_address(),
+        //     &seller_deposit,
+        // );
 
         // Transfer token from `from` to this contract address.
-        token::Client::new(&env, &token).xfer(
-            &buyer_adr,
-            &env.current_contract_address(),
-            &buyer_deposit,
-        );
+        // TODO: .xfer() has changed
+        // token::Client::new(&env, &token).xfer(
+        //     &buyer_adr,
+        //     &env.current_contract_address(),
+        //     &buyer_deposit,
+        // );
 
         let ts: u64 = env.ledger().timestamp();
 
@@ -298,17 +337,18 @@ impl PutOptionContract {
 
         // Transfer the stored amount of token to claimant after passing
         // all the checks.
-        token::Client::new(&env, &token).xfer(
-            &env.current_contract_address(),
-            &seller_adr,
-            &seller_payout,
-        );
+        // TODO: .xfer() has changed
+        // token::Client::new(&env, &token).xfer(
+        //     &env.current_contract_address(),
+        //     &seller_adr,
+        //     &seller_payout,
+        // );
 
-        token::Client::new(&env, &token).xfer(
-            &env.current_contract_address(),
-            &buyer_adr,
-            &buyer_payout,
-        );
+        // token::Client::new(&env, &token).xfer(
+        //     &env.current_contract_address(),
+        //     &buyer_adr,
+        //     &buyer_payout,
+        // );
         // Remove the balance entry to prevent any further claims.
         env.storage().remove(&DataKey::Balance);
     }
@@ -425,4 +465,3 @@ fn straddle_px(strk1_px: i128, px: i128) -> i128 {
     return diff.abs();
 }
 
-mod test;

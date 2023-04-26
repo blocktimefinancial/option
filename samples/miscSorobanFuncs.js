@@ -226,7 +226,7 @@ function getLedgerKeySymbol(contractId, symbolText) {
 }
 
 console.log(getLedgerKeySymbol(
-  contractId,
+  oracle1,
   '0'));
 
 function createContractTransaction(
@@ -325,7 +325,7 @@ async function testLoadAccount() {
   console.dir(result);
 }
 
-//testLoadAccount();
+testLoadAccount();
 
 async function testGateway() {
   
