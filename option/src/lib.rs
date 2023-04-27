@@ -227,20 +227,18 @@ impl PutOptionContract {
         buyer_deposit = price * qty;
 
         // Transfer token from `from` to this contract address.
-        // TODO: .xfer() has changed
-        // token::Client::new(&env, &token).xfer(
-        //     &seller_adr,
-        //     &env.current_contract_address(),
-        //     &seller_deposit,
-        // );
+        token::Client::new(&env, &token).transfer(
+            &seller_adr,
+            &env.current_contract_address(),
+            &seller_deposit,
+        );
 
         // Transfer token from `from` to this contract address.
-        // TODO: .xfer() has changed
-        // token::Client::new(&env, &token).xfer(
-        //     &buyer_adr,
-        //     &env.current_contract_address(),
-        //     &buyer_deposit,
-        // );
+        token::Client::new(&env, &token).transfer(
+            &buyer_adr,
+            &env.current_contract_address(),
+            &buyer_deposit,
+        );
 
         let ts: u64 = env.ledger().timestamp();
 
@@ -337,18 +335,17 @@ impl PutOptionContract {
 
         // Transfer the stored amount of token to claimant after passing
         // all the checks.
-        // TODO: .xfer() has changed
-        // token::Client::new(&env, &token).xfer(
-        //     &env.current_contract_address(),
-        //     &seller_adr,
-        //     &seller_payout,
-        // );
+        token::Client::new(&env, &token).transfer(
+            &env.current_contract_address(),
+            &seller_adr,
+            &seller_payout,
+        );
 
-        // token::Client::new(&env, &token).xfer(
-        //     &env.current_contract_address(),
-        //     &buyer_adr,
-        //     &buyer_payout,
-        // );
+        token::Client::new(&env, &token).transfer(
+            &env.current_contract_address(),
+            &buyer_adr,
+            &buyer_payout,
+        );
         // Remove the balance entry to prevent any further claims.
         env.storage().remove(&DataKey::Balance);
     }
