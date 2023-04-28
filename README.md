@@ -68,5 +68,13 @@ the integration process.
 [Soroban Video](https://www.loom.com/share/9a13bd19491b443f8c145040bca0d105)
 
 [Soroban Smart Contract calls from BTF Platform](https://www.loom.com/share/ec6ffaaf9b5340bc85b8d005edf45900)
+
+[SCF #13 Pitch Video](https://youtu.be/iUjGjVV6DVw)
+[SCF #13 Slide Deck](https://www.canva.com/design/DAFhT7nGxr8/LcUwa4GXjQMr6T3Y8CseaQ/edit?utm_content=DAFhT7nGxr8&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
+## Who we are
+Block Time Financial, Inc. is a blockchain infrastructure company.  We provide buinesses with the technology to implement blockchain solutions in
+a regulatory compliant manner.  We run parallel to your current systems, allowing you to experiment and explore the future of finance.
+info@blocktimefinancial.com
+(262) 368-1150
 #### Disclaimer:
 Please see the DISCLAIMER.md file in this repo
