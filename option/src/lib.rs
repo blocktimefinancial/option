@@ -17,11 +17,16 @@
 //! positions.
 //!
 #![no_std]
+#[allow(dead_code)]
 
 use soroban_sdk::{contractimpl, contracttype, Address, BytesN, Env, Vec};
 
 mod token {
     soroban_sdk::contractimport!(file = "../../soroban_token_spec.wasm");
+}
+
+mod oracle {
+    soroban_sdk::contractimport!(file = "../oracle/target/wasm32-unknown-unknown/release/soroban_oracle.wasm");
 }
 
 const AMERICAN: u32 = 1;   // American option, can be exercised at any time before expiration, not supported at this time
@@ -52,6 +57,9 @@ pub enum DataKey {
     TradePx,
     TradeQty,
     OptionType,
+    OracleTs,
+    OracleFlags,
+    OracleToken
 }
 
 #[derive(Clone)]
@@ -259,19 +267,25 @@ impl PutOptionContract {
         });
     }
 
-    // The oracle calls this function to provide the price of the underlying
+    // The function calls the oracle to provide the price of the underlying
     // asset.  The contract checks that the price is above/below the strike
     // price and allows the buyer/seller to claim the calculated balances if
     // the expiration is passed.
     // TODO: Figure out if this will be a pull or be called from the oracle.
-    pub fn upd_px(env: Env, token: BytesN<32>, px: i128) {
-        if px < 0 {
-            panic!("Price can't be < 0");
+    pub fn upd_px(env: Env) {
+        if !is_initialized(&env) {
+            panic!("contract not initialized");
         }
-        let t: BytesN<32> = env.storage().get_unchecked(&DataKey::Token).unwrap();
-        if token != t {
-            panic!("wrong token price");
-        }
+        let oracle_contract_id: BytesN<32> = env.storage().get_unchecked(&DataKey::Oracle).unwrap();
+        let client = oracle::Client::new(&env, &oracle_contract_id);
+        let oracle_data: Vec<i128> = client.retrieve();
+        // Store the data
+        
+        // BROKEN CODE
+        env.storage().set(&DataKey::OracleToken, &oracle_data[0]);
+        env.storage().set(&DataKey::MktPrice, &oracle_data[1]);
+        env.storage().set(&DataKey::OracleTs, &oracle_data[2]);
+        env.storage().set(&DataKey::OracleFlags, &oracle_data[3]);
     }
 
     // Get the current buyer obligation, seller obligation, and market price.

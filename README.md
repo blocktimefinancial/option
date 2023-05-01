@@ -55,7 +55,7 @@ be used for timely, accurate  data.
 
 *Starting the pxpump.js application is now updating the Oracle.*
 #### What it does
-Once every minute, the application queries the yahoo-finance interface for the SP500 cash index (SPX).
+Once every minute, the application queries the yahoo-finance interface for the SPRD(r) ETF SPY.
 If the query is successful, it then calls the Oracle smart contract's update method with the new price
 and any extra information that a smart contract might need. 
 ## Platform Integration

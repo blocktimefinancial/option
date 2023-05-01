@@ -5,6 +5,7 @@ use soroban_sdk::{contractimpl, contracttype, Env, Vec, Address, BytesN};
 mod token {
     soroban_sdk::contractimport!(file = "../../soroban_token_spec.wasm");
 }
+
 #[derive(Clone)]
 #[contracttype]
 pub struct UpdData {
