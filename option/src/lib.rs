@@ -282,10 +282,10 @@ impl PutOptionContract {
         // Store the data
         
         // BROKEN CODE
-        env.storage().set(&DataKey::OracleToken, &oracle_data[0]);
-        env.storage().set(&DataKey::MktPrice, &oracle_data[1]);
-        env.storage().set(&DataKey::OracleTs, &oracle_data[2]);
-        env.storage().set(&DataKey::OracleFlags, &oracle_data[3]);
+        env.storage().set(&DataKey::OracleToken, &oracle_data.get(0).unwrap().unwrap());
+        env.storage().set(&DataKey::MktPrice, &oracle_data.get(1).unwrap().unwrap());
+        env.storage().set(&DataKey::OracleTs, &oracle_data.get(2).unwrap().unwrap());
+        env.storage().set(&DataKey::OracleFlags, &oracle_data.get(3).unwrap().unwrap());
     }
 
     // Get the current buyer obligation, seller obligation, and market price.
