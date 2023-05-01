@@ -17,7 +17,7 @@
 //! positions.
 //!
 #![no_std]
-#[allow(dead_code)]
+#![allow(dead_code)]
 
 use soroban_sdk::{contractimpl, contracttype, Address, BytesN, Env, Vec};
 
@@ -281,7 +281,6 @@ impl PutOptionContract {
         let oracle_data: Vec<i128> = client.retrieve();
         // Store the data
         
-        // BROKEN CODE
         env.storage().set(&DataKey::OracleToken, &oracle_data.get(0).unwrap().unwrap());
         env.storage().set(&DataKey::MktPrice, &oracle_data.get(1).unwrap().unwrap());
         env.storage().set(&DataKey::OracleTs, &oracle_data.get(2).unwrap().unwrap());
