@@ -9,6 +9,7 @@ const yf = require("yahoo-finance2").default;
 const util = require("util");
 const stellar_sdk = require("stellar-sdk");
 const SorobanClient = require("soroban-client");
+const { result } = require("lodash");
 const xdr = SorobanClient.xdr;
 require("dotenv").config();
 
@@ -133,7 +134,7 @@ async function invokeContract(params) {
 
   // Log another quick peek at the transaction
   console.log(`Tx: ${tx.toXDR()}`);
-  result = await server.sendTransaction(tx);
+  let result = await server.sendTransaction(tx);
 
   // Peek at the results and then wait for the transaction to complete
   console.log("Tx sendTransaction result: ", result);
@@ -160,6 +161,7 @@ async function invokeContract(params) {
       timeout < maxTimeout ? "did not" : "did"
     } timeout`
   );
+
   return result;
 }
 
@@ -218,28 +220,43 @@ function toSorobanArgs(quote) {
   let flags = 0;
   let price = 0;
 
-  if (marketState === "PRE") {
+  switch(marketState) {
+  case "PRE":
     flags |= 1;
     price = quote.preMarketPrice;
     timestamp = quote.preMarketTime.getTime();
-  } else if (marketState === "POST") {
+    break;
+  case "POST":
     flags |= 2;
     price = quote.regularMarketPreviousClose;
     timestamp = quote.regularMarketTime.getTime();
-  } else if (marketState === "REGULAR") {
+    break;
+  case "REGULAR":
     flags |= 4;
     price = quote.regularMarketPrice;
     timestamp = quote.regularMarketTime.getTime();
+    break;
+  case "POSTPOST":
+    flags |= 8;
+    price = quote.regularMarketPrice;
+    timestamp = quote.postMarketTime.getTime();
+    break;
+  default:
+    // Invalid market state
+    flags |= 16;
+    price = 0.0;
+    timestamp = 0;
   }
 
   // from the quote.  We'll just stringify the quote for now.
   let symbolCode = bigNumberToI128(new BigNumber(1));
 
   // We know that Soroban VM doesn't support floating point numbers, so we'll
+  // TODO: This actually overflows the scvI128 XDR conversion, so we'll need to
+  // wait until js-stellar-base has better conversion support.
+  // Moving to 2 decimal places for now.
   // convert numbers to i128 values with 7 decimal places of precision.
-  price = bigNumberToI128(
-    new BigNumber(price * 10000000)
-  );
+  price = bigNumberToI128(new BigNumber(price * 100));
 
   // Dates are also not supported, so we'll convert them to timestamps in
   // the same format as Soroban VM timestamps.
@@ -301,7 +318,7 @@ async function main() {
     sc_contract: new SorobanClient.Contract(process.env.SC_CONTRACTID),
   };
 
-  setInterval(async () => await timerFunc(scDetailsObj), 60000);
+  setInterval(async () => await timerFunc(scDetailsObj), 60000 * 5);
 }
 
 main();

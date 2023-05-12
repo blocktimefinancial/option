@@ -26,6 +26,18 @@ mod token {
 
 #[derive(Clone)]
 #[contracttype]
+pub enum OptionType {
+    American = 1,   // American option, can be exercised at any time before expiration, not supported at this time
+    European = 2,   // European option, can only be exercised at expiration
+    Call = 4,       // Call option
+    Put = 8,        // Put option
+    Binary = 16,    // Binary option, either 0 or 1
+    CallSprd = 32,  // Basic call spread, long call at low strike, short call at high strike
+    PutSprd = 64,   // Basic put spread, long put at low strike, short put at high strike
+}
+
+#[derive(Clone)]
+#[contracttype]
 pub enum DataKey {
     Init,
     BAdr,
@@ -82,7 +94,7 @@ pub struct PutOption {
     pub stk: i128,
     pub trades: Vec<Address>,
     pub exp: TimeBound,
-    pub opt_type: u32, // Bitmask for options details 0x0 = American, 0x1 = European, 0x2 = Call, 0x4 = Put, 0x8 = Binary, 
+    pub opt_type: u32, // Bitmask for options details 0x1 = American, 0x2 = European, 0x4 = Call, 0x8 = Put, 0xF = Binary,... 
 }
 
 pub struct PutOptionContract;
@@ -98,14 +110,14 @@ fn check_time_bound(env: &Env, time_bound: &TimeBound) -> bool {
     }
 }
 
-// Contract usage pattern (pseudocode):
-// 1. Depositor calls `token.approve(depositor_auth, claimable_balance_contract, 100)`
-//    to allow contract to withdraw the needed amount of token.
-// 2. Depositor calls `deposit(token_id, 100, claimants, time bound)`. Contract
-//    withdraws the provided token amount and stores it until one of the claimants
-//    claims it.
-// 3. Claimant calls `claim()` and if time/auth conditons are passed
-//    receives the balance.
+// Contract usage:
+// 1. Initialize the contract with the option details.
+// 2. Buyer and seller deposit the required amount of token.
+// 3. Buyer and seller can claim the balance after the expiration time.
+// 4. Buyer and seller can claim the balance after the oracle has provided
+//    the price of the underlying asset, and the price is above/below the
+//    strike price.
+
 #[contractimpl]
 impl PutOptionContract {
 
@@ -117,6 +129,7 @@ impl PutOptionContract {
     
     pub fn list(
         env: Env,
+        opt_type: u32,     // option type, only put option is supported at this time
         strike: i128,      // strike price
         exp: u64,          // expiration date and time
         oracle: Address,   // oracle contract address
@@ -126,12 +139,37 @@ impl PutOptionContract {
         if is_initialized(&env) {
             panic!("contract is already initialized");
         }
+        // Check that the caller is the admin
+        admin.require_auth();
 
         let e: TimeBound = TimeBound {
             kind: TimeBoundKind::After,
             timestamp: exp,
         };
+        // Set the option details
+        if( opt_type != OptionType::Put | OptionType::European ) {
+            panic!("only put option is supported at this time");
+        }
+        
+        // Do some checking on the input parameters
+        if( strike <= 0 ) {
+            panic!("strike price must be greater than 0");
+        }
+        if( exp <= env.ledger().timestamp() ) {
+            panic!("expiration time must be in the future");
+        }
+        if( oracle == Address::default() ) {
+            panic!("oracle address must be provided");
+        }
+        if( token == BytesN::default() ) {
+            panic!("token address must be provided");
+        }
+        if( admin == Address::default() ) {
+            panic!("admin address must be provided");
+        }
+        // Set the option details
         env.storage().set(&DataKey::Init, &true);
+        env.storage().set(&DataKey::OptionType, &opt_type);
         env.storage().set(&DataKey::Strike, &strike);
         env.storage().set(&DataKey::Expiration, &e);
         env.storage().set(&DataKey::Oracle, &oracle);
