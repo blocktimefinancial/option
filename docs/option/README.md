@@ -15,7 +15,7 @@ The list_option function can be called to "pre-list" the option contract.  This 
 The trade function allows both the buy and sell parties to submit their side of the trade to the smart contract along with the collateral to settled the trade when it expires.  The trade information is validated against the pre-defined data provided in the list_option function above.  The contract will panic if the trade details don't match the counterparty or the option listing.
 
 ##### settle
-The settle function allows either party to settle the trade if the epiration has passed.  The settle function calls the oracle to gether market data and state and verifies that settlement is possible.  If settlement can proceed, the payouts of collateral are computed and each counterparty is allowed to withdraw their final settlement amount.  The trade is then complete.
+The settle function allows either party to settle the trade if the expiration has passed.  The settle function calls the oracle to gether market data and state and verifies that settlement is possible.  If settlement can proceed, the payouts of collateral are computed and each counterparty is allowed to withdraw their final settlement amount.  The trade is then complete.
 
 ##### info
 The info function dumps the current option and trade info.

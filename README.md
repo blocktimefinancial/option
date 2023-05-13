@@ -77,7 +77,7 @@ the integration process.
 [SCF #13 Pitch Video](https://youtu.be/iUjGjVV6DVw)
 [SCF #13 Slide Deck](https://www.canva.com/design/DAFhT7nGxr8/LcUwa4GXjQMr6T3Y8CseaQ/edit?utm_content=DAFhT7nGxr8&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
 ## Who we are
-Block Time Financial, Inc. is a blockchain infrastructure company.  We provide buinesses with the technology to implement blockchain solutions in
+Block Time Financial, Inc. is a blockchain infrastructure company.  We provide businesses with the technology to implement blockchain solutions in
 a regulatory compliant manner.  We run parallel to your current systems, allowing you to experiment and explore the future of finance.
 info@blocktimefinancial.com
 (262) 368-1150

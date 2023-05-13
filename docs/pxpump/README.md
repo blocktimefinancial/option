@@ -6,7 +6,7 @@ of truth in this case should be the underlying listing exchange or an exchange t
 
 #### Things to remember
 1) Currently all feeds shutdown over the weekends and holidays.  The oracle must know the current state of the market.
-2) All feeds can and will go down on occassion.  While "dirty" data is very rare, late or stale data must be delt with.
+2) All feeds can and will go down on occasion.  While "dirty" data is very rare, late or stale data must be dealt with.
 3) All real-time data feeds have fees charged by the exchange.  It is unlawful to re-distribute real-time data without
 an exchange agreement to do so.  Various pricing policies apply for different tiers.
 4) I would expect that all oracles would be policed by the entity providing the underlying data.  There may be a fee
