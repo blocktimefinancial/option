@@ -29,12 +29,12 @@ Expiration - Unix Timestamp - the Unix timestamp in ms
 OptionType - C,P,...  A 1 char code for option type, with more exotics TBD
 Strike - I128 formatted with 7 implied decimal places, max strike = 17,014,118,3​46,046,923,173,168,7​30,371,5​88.4​105727
 
-Root - 64 chars hax encoded tokenId
-Expiration - 14 chars 33239962256000, will last until the year 5138 by which time this blockchain will be dead...???
-OptionType - 1 char
-Strike - 43 chars the largest signed int128 is 170141183​460469231731687​303715​884​105727
+##### Root - 64 chars hax encoded tokenId
+##### Expiration - 14 chars 33239962256000, will last until the year 5138 by which time this blockchain will be dead...???
+##### OptionType - 1 char
+##### Strike - 43 chars the largest signed int128 is 170141183​460469231731687​303715​884​105727
+##### Total 122 chars
 
-Total 122 chars
 This should be a Soroban Symbol datatype which should plenty of room for free format symbols without convention
 ```
 function toObject(symbol) {
