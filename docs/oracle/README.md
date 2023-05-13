@@ -11,3 +11,6 @@ calls to the Oracle and inquire price and market state data for processing in th
 
 #### Things to watchout for
 While an Oracle may call itself the most trusted, one must always be prepared for edge cases.  An Oracle is only as reliable as the pricing information that it is provided.  If that source is delayed or goes down, the Oracle may become comprimised.  The Oracle itself should only be able to be updated by the trusted source, any outside updates may comprimise the Oracle data.  In the case of this Oracle, exchange holidays must be tracked carefully and SC's using the Oracle data must be aware of them too.
+
+###### Disclaimer
+[Disclaimer](../../DISCLAIMER.md)

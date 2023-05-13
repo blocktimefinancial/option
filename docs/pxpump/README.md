@@ -2,7 +2,7 @@
 
 #### Overview
 The price pump application is responsible for providing the oracle SC the pricing data from a source of truth.  The source
-of truth in this case should be the underlying listing exchange or an exchange that the underlying is reliably traded on.
+of truth in this case should be the underlying listing exchange or an exchange that the underlying is reliably traded on.  In reality, the Soroban contracts can only be updated once approximately every 5 seconds.  Other SCs should be aware of the update interval and need to process accordingly.
 
 #### Things to remember
 1) Currently all feeds shutdown over the weekends and holidays.  The oracle must know the current state of the market.
@@ -31,3 +31,6 @@ The options for sourcing commodity pricing for US traded commodities are as foll
 The options for US listed option pricing feeds are as follows:
 1) The OPRA multicast feeds from OCC
 2) The CBOE
+
+###### Disclaimer
+[Disclaimer](../../DISCLAIMER.md)

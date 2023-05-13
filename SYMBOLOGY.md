@@ -36,7 +36,7 @@ Strike - 43 chars the largest signed int128 is 170141183​460469231731687​303
 
 Total 122 chars
 This should be a Soroban Symbol datatype which should plenty of room for free format symbols without convention
-
+```
 function toObject(symbol) {
     tokenClient = SorobanClient.tokenId(symbol.slice(0,63));
     const tokenName = tokenClient.name();
@@ -46,7 +46,8 @@ function toObject(symbol) {
     const strike = BigNumber(symbol.slice(80));
     return { tokeName, tokenSymbol, expiration, optionType, strike };
 }
-
+```
+```
 function toSymbol(tokenId, expiration, optionType, strike) {
     let symbol = "";
     symbol += tokenId;
@@ -54,3 +55,4 @@ function toSymbol(tokenId, expiration, optionType, strike) {
     symbol += optionType;
     symbol += strike;
 }
+```
