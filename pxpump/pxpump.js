@@ -85,7 +85,7 @@ function bigNumberToI128(value) {
     padded[0] |= 0x80;
   }
 
-  const hi = new xdr.Uint64(
+  const hi = new xdr.Int64(
     bigNumberFromBytes(false, ...padded.slice(4, 8)).toNumber(),
     bigNumberFromBytes(false, ...padded.slice(0, 4)).toNumber()
   );
@@ -125,23 +125,33 @@ async function invokeContract(params) {
     ...body.params // Method parameters
   );
 
+  console.log(`Tx XDR: ${tx.toXDR()}`);
+  console.log(`Simulating transaction for ${body.contractId}`);
+   
+  // Sign the transaction
+   console.log(`Signing with secret: ${body.secret}`);
+   tx.sign(SorobanClient.Keypair.fromSecret(body.secret));
+
+  const sim = await server.simulateTransaction(tx);
+  console.log("cost:", sim.cost);
+  console.log("results:", sim.results);
+  console.log("error:", sim.error);
+  console.log("latestLedger:", sim.latestLedger);
+
   console.log(`Preparing transaction for ${body.contractId}`);
-  console.log(`Tx: ${tx.toXDR()}`);
   tx = await server.prepareTransaction(tx, SorobanClient.Networks.FUTURENET);
 
   // Log a quick peek at the transaction
   console.log(`After prepareTransaction Tx: ${tx.toXDR()}`);
 
-  // Sign the transaction
-  console.log(`Signing with secret: ${body.secret}`);
-  tx.sign(SorobanClient.Keypair.fromSecret(body.secret));
+ 
 
   // Log another quick peek at the transaction
-  console.log(`Tx: ${tx.toXDR()}`);
+  console.log(`Tx XDR Before Sending: ${tx.toXDR()}`);
   let result = await server.sendTransaction(tx);
 
   // Peek at the results and then wait for the transaction to complete
-  console.log("Tx sendTransaction result: ", result);
+  console.log("Tx sendTransaction result: ", util.inspect(result));
 
   const hash = result.hash;
   let status = result.status;
@@ -224,35 +234,37 @@ function toSorobanArgs(quote) {
   let flags = 0;
   let price = 0;
 
-  switch(marketState) {
-  case "PRE":
-    flags |= 1;
-    price = quote.preMarketPrice;
-    timestamp = quote.preMarketTime.getTime();
-    break;
-  case "POST":
-    flags |= 2;
-    price = quote.regularMarketPreviousClose;
-    timestamp = quote.regularMarketTime.getTime();
-    break;
-  case "REGULAR":
-    flags |= 4;
-    price = quote.regularMarketPrice;
-    timestamp = quote.regularMarketTime.getTime();
-    break;
-  case "POSTPOST":
-    flags |= 8;
-    price = quote.regularMarketPrice;
-    timestamp = quote.postMarketTime.getTime();
-    break;
-  default:
-    // Invalid market state
-    flags |= 16;
-    price = 0.0;
-    timestamp = 0;
+  switch (marketState) {
+    case "PRE":
+      flags |= 1;
+      price = quote.preMarketPrice;
+      timestamp = quote.preMarketTime.getTime();
+      break;
+    case "POST":
+      flags |= 2;
+      price = quote.regularMarketPreviousClose;
+      timestamp = quote.regularMarketTime.getTime();
+      break;
+    case "REGULAR":
+      flags |= 4;
+      price = quote.regularMarketPrice;
+      timestamp = quote.regularMarketTime.getTime();
+      break;
+    case "POSTPOST":
+      flags |= 8;
+      price = quote.regularMarketPrice;
+      timestamp = quote.postMarketTime.getTime();
+      break;
+    default:
+      // Invalid market state
+      flags |= 16;
+      price = 0.0;
+      timestamp = 0;
   }
 
-  console.log(`Market state: ${marketState}, flags: ${flags}, price: ${price}, timestamp: ${timestamp}`);
+  console.log(
+    `Market state: ${marketState}, flags: ${flags}, price: ${price}, timestamp: ${timestamp}`
+  );
   // from the quote.  We'll just stringify the quote for now.
   let symbolCode = bigNumberToI128(new BigNumber(1));
   console.dir(`Symbol code: ${symbolCode}`);
