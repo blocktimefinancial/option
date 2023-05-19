@@ -7,11 +7,12 @@
 const BigNumber = require("bignumber.js");
 const yf = require("yahoo-finance2").default;
 const util = require("util");
-const stellar_sdk = require("stellar-sdk");
 const SorobanClient = require("soroban-client");
-const { result } = require("lodash");
 const xdr = SorobanClient.xdr;
 require("dotenv").config();
+
+const ONE_MINUTE_MS = 60 * 1000;
+const FIVE_MINUTES_MS = 5 * ONE_MINUTE_MS;
 
 // These are global variables for testing on FUTURENET
 const contractId =
@@ -100,6 +101,7 @@ function createContractTransaction(sourceAccount, contractId, method, ...args) {
   let myArgs = args || [];
   const contract = new SorobanClient.Contract(contractId);
 
+  console.log(`Creating contract transaction for ${contractId}`);
   return new SorobanClient.TransactionBuilder(sourceAccount, {
     fee: 100,
     networkPassphrase: SorobanClient.Networks.FUTURENET,
@@ -111,7 +113,7 @@ function createContractTransaction(sourceAccount, contractId, method, ...args) {
 
 async function invokeContract(params) {
   let body = params.body;
-
+  let src = params.publicKey || params.source;
   // Load the account
   let source = await server.getAccount(body.publicKey);
 
@@ -123,6 +125,8 @@ async function invokeContract(params) {
     ...body.params // Method parameters
   );
 
+  console.log(`Preparing transaction for ${body.contractId}`);
+  console.log(`Tx: ${tx.toXDR()}`);
   tx = await server.prepareTransaction(tx, SorobanClient.Networks.FUTURENET);
 
   // Log a quick peek at the transaction
@@ -248,8 +252,10 @@ function toSorobanArgs(quote) {
     timestamp = 0;
   }
 
+  console.log(`Market state: ${marketState}, flags: ${flags}, price: ${price}, timestamp: ${timestamp}`);
   // from the quote.  We'll just stringify the quote for now.
   let symbolCode = bigNumberToI128(new BigNumber(1));
+  console.dir(`Symbol code: ${symbolCode}`);
 
   // We know that Soroban VM doesn't support floating point numbers, so we'll
   // TODO: This actually overflows the scvI128 XDR conversion, so we'll need to
@@ -257,13 +263,15 @@ function toSorobanArgs(quote) {
   // Moving to 2 decimal places for now.
   // convert numbers to i128 values with 7 decimal places of precision.
   price = bigNumberToI128(new BigNumber(price * 100));
-
+  console.dir(`Price: ${price}`);
   // Dates are also not supported, so we'll convert them to timestamps in
   // the same format as Soroban VM timestamps.
   timestamp = bigNumberToI128(new BigNumber(timestamp));
+  console.dir(`Timestamp: ${timestamp}`);
 
   //Flags are a bit field, so we'll just set the third bit
-  flags = bigNumberToI128(new BigNumber(4));
+  flags = bigNumberToI128(new BigNumber(flags));
+  console.dir(`Flags: ${flags}`);
 
   return [symbolCode, price, timestamp, flags];
 }
@@ -280,13 +288,14 @@ async function updateSmartContract(scDetailsObj, quote) {
   const fee = 100;
 
   console.log(`UpdatingSmartContract ${contractId} using ${pk}`);
-  console.log(`Converted quote: ${toSorobanArgs(quote)}`);
+  const sorobanArgs = toSorobanArgs(quote);
+  console.log(`Converted quote: ${util.inspect(sorobanArgs, false, 5)}`);
 
   return await invokeContract({
     body: {
       publicKey: pk,
       secret: secret,
-      params: toSorobanArgs(quote),
+      params: sorobanArgs,
       contractId: contractId,
       method: "update",
     },
@@ -318,7 +327,7 @@ async function main() {
     sc_contract: new SorobanClient.Contract(process.env.SC_CONTRACTID),
   };
 
-  setInterval(async () => await timerFunc(scDetailsObj), 60000 * 5);
+  setInterval(async () => await timerFunc(scDetailsObj), ONE_MINUTE_MS);
 }
 
 main();
