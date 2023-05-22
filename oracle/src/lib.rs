@@ -1,6 +1,6 @@
 #![no_std]
 
-use soroban_sdk::{contractimpl, contracttype, Env, Vec, Address, BytesN};
+use soroban_sdk::{contractimpl, contracttype, symbol, Env, Vec, Address, BytesN };
 
 mod token {
     soroban_sdk::contractimport!(file = "../../soroban_token_spec.wasm");
@@ -70,6 +70,9 @@ impl OracleContract {
         };
         env.storage().set(&DataKey::Quote, &upd_data);
         
+        // Emit event
+        let topic = (symbol!("update"), token);
+        env.events().publish(topic, timestamp);
     }
 
     pub fn retrieve(env: Env) -> Vec<i128> {
@@ -80,6 +83,13 @@ impl OracleContract {
         // TODO: Check if the caller is in the list of users that can invoke this function
         
         let upd_data: UpdData = env.storage().get_unchecked(&DataKey::Quote).unwrap();
+
+        let timestamp = env.ledger().timestamp();
+
+            // Emit event
+            let topic = (symbol!("retrieve"), upd_data.token);
+            env.events().publish(topic, timestamp);
+
         let mut ret_data: Vec<i128> = Vec::new(&env);
         ret_data.push_back(upd_data.token);
         ret_data.push_back(upd_data.price);

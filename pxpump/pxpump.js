@@ -176,6 +176,13 @@ async function invokeContract(params) {
     } timeout`
   );
 
+  // Emit event
+  if (status.toLowerCase() === "success") {
+    console.log("Tx succeeded");
+  } else {
+    console.log("Tx failed");
+  }
+  
   return result;
 }
 
