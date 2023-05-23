@@ -52,17 +52,6 @@ const PUT_SPRD: u32 = 64; // Basic put spread, long put at low strike, short put
 // storage variables to minimize the cost of the contract.  We use a single storage variable to store
 // all the option details.  The option details are stored as a vector of bytes.  The vector is
 // serialized and deserialized using the soroban_sdk::storage::StorageValue trait.
-#[derive(Clone)]
-#[contracttype]
-pub enum OptionType {
-    American = 1,   // American option, can be exercised at any time before expiration, not supported at this time
-    European = 2,   // European option, can only be exercised at expiration
-    Call = 4,       // Call option
-    Put = 8,        // Put option
-    Binary = 16,    // Binary option, either 0 or 1
-    CallSprd = 32,  // Basic call spread, long call at low strike, short call at high strike
-    PutSprd = 64,   // Basic put spread, long put at low strike, short put at high strike
-}
 
 #[derive(Clone)]
 #[contracttype]
@@ -132,12 +121,8 @@ pub struct OptionDef {
     pub strike: i128,
     pub mkt_price: i128,
     pub exp: TimeBound,
-<<<<<<< HEAD
-    pub opt_type: u32, // Bitmask for options details 0x1 = American, 0x2 = European, 0x4 = Call, 0x8 = Put, 0xF = Binary,... 
-=======
     pub opt_type: u32, // Bitmask for options details 0x1 = American, 0x2 = European, 0x4 = Call, 0x8 = Put, 0xF = Binary,...
     pub symbol: Symbol,
->>>>>>> 3d304dfabfd65a26285ceabd23726a588df266a5
 }
 
 pub struct OptionContract;
@@ -160,12 +145,6 @@ fn check_time_bound(env: &Env, time_bound: &TimeBound) -> bool {
 // 4. Buyer and seller can claim the balance after the oracle has provided
 //    the price of the underlying asset, and the price is above/below the
 //    strike price.
-<<<<<<< HEAD
-
-#[contractimpl]
-impl PutOptionContract {
-=======
->>>>>>> 3d304dfabfd65a26285ceabd23726a588df266a5
 
 #[contractimpl]
 impl OptionContract {
@@ -175,21 +154,12 @@ impl OptionContract {
 
     pub fn list(
         env: Env,
-<<<<<<< HEAD
-        opt_type: u32,     // option type, only put option is supported at this time
-        strike: i128,      // strike price
-        exp: u64,          // expiration date and time
-        oracle: Address,   // oracle contract address
-        token: BytesN<32>, // token address (e.g. USDC)
-        admin: Address,    // admin address
-=======
         opt_type: u32,      // option type, only put option is supported at this time
         strike: i128,       // strike price
         exp: u64,           // expiration date and time
         oracle: BytesN<32>, // oracle contract address
         token: BytesN<32>,  // token address (e.g. USDC)
         admin: Address,     // admin address
->>>>>>> 3d304dfabfd65a26285ceabd23726a588df266a5
     ) {
         if !is_initialized(&env) {
             panic!("contract is not initialized");
@@ -202,27 +172,29 @@ impl OptionContract {
             timestamp: exp,
         };
         // Set the option details
-        if( opt_type != OptionType::Put | OptionType::European ) {
+        if opt_type != (PUT | EUROPEAN)  {
             panic!("only put option is supported at this time");
         }
         
         // Do some checking on the input parameters
-        if( strike <= 0 ) {
+        if strike <= 0  {
             panic!("strike price must be greater than 0");
         }
-        if( exp <= env.ledger().timestamp() ) {
+        if exp <= env.ledger().timestamp()  {
             panic!("expiration time must be in the future");
         }
-        if( oracle == Address::default() ) {
-            panic!("oracle address must be provided");
-        }
-        if( token == BytesN::default() ) {
-            panic!("token address must be provided");
-        }
-        if( admin == Address::default() ) {
-            panic!("admin address must be provided");
-        }
-        // Set the option details
+
+        // if oracle == Address::default()  {
+        //     panic!("oracle address must be provided");
+        // }
+        // if token == BytesN::default()  {
+        //     panic!("token address must be provided");
+        // }
+        // if admin == Address::default()  {
+        //     panic!("admin address must be provided");
+        // }
+
+        // // Set the option details
         env.storage().set(&DataKey::Init, &true);
         env.storage().set(&DataKey::OptionType, &opt_type);
         env.storage().set(&DataKey::Strike, &strike);
@@ -284,7 +256,7 @@ impl OptionContract {
             seller_deposit = (strike - price) * qty;
 
             // Transfer token from `counter_party` to this contract address.
-            token::Client::new(&env, &token).transfer(
+            token::Client::new(&env, &token).xfer(
                 &counter_party,
                 &env.current_contract_address(),
                 &seller_deposit,
@@ -304,7 +276,7 @@ impl OptionContract {
             buyer_deposit = price * qty;
 
             // Transfer token from `counter_party` to this contract address.
-            token::Client::new(&env, &token).transfer(
+            token::Client::new(&env, &token).xfer(
                 &counter_party,
                 &env.current_contract_address(),
                 &buyer_deposit,
@@ -446,7 +418,7 @@ impl OptionContract {
         if payout > 0 {
             // Transfer the stored amount of token to claimant after passing
             // all the checks.
-            token::Client::new(&env, &token).transfer(
+            token::Client::new(&env, &token).xfer(
                 &env.current_contract_address(),
                 &counter_party,
                 &payout,

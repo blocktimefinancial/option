@@ -1,6 +1,6 @@
 #![no_std]
 
-use soroban_sdk::{contractimpl, contracttype, symbol, Env, Vec, Address, BytesN };
+use soroban_sdk::{contractimpl, contracttype, Address, BytesN, Env, Symbol, Vec};
 
 mod token {
     soroban_sdk::contractimport!(file = "../../soroban_token_spec.wasm");
@@ -9,10 +9,10 @@ mod token {
 #[derive(Clone)]
 #[contracttype]
 pub struct UpdData {
-    pub token: i128,        // Token contract, asset_code, asset_id  TBD
-    pub price: i128,        // Price of asset in USD
-    pub timestamp: i128,    // Timestamp of price   
-    pub flags: i128,        // Flags : MktOpen, MktClosed, Settlement, Halted, Bitmask 0,1,2,4,8,16,32... TBD
+    pub token: i128,     // Token contract, asset_code, asset_id  TBD
+    pub price: i128,     // Price of asset in USD
+    pub timestamp: i128, // Timestamp of price
+    pub flags: i128, // Flags : MktOpen, MktClosed, Settlement, Halted, Bitmask 0,1,2,4,8,16,32... TBD
 }
 
 pub struct OracleContract;
@@ -22,17 +22,14 @@ pub struct OracleContract;
 pub enum DataKey {
     Init,
     Quote,
-    PxPumpHash,         // SHA256 hash of the price pump code
-    PxPumpUser,         // User for the price pump that invokes the update function
-    Users(Address),  // List of users that can invoke the retrieve function
+    PxPumpHash,     // SHA256 hash of the price pump code
+    PxPumpUser,     // User for the price pump that invokes the update function
+    Users(Address), // List of users that can invoke the retrieve function
 }
 
 #[contractimpl]
 impl OracleContract {
-
-    pub fn init(
-        env: Env,
-    ) {
+    pub fn init(env: Env) {
         if is_initialized(&env) == true {
             panic!("Contract already initialized");
         }
@@ -59,7 +56,7 @@ impl OracleContract {
         }
 
         let pxpump_user: Address = env.storage().get_unchecked(&DataKey::PxPumpUser).unwrap();
-        
+
         pxpump_user.require_auth();
 
         let upd_data = UpdData {
@@ -69,9 +66,9 @@ impl OracleContract {
             flags,
         };
         env.storage().set(&DataKey::Quote, &upd_data);
-        
+
         // Emit event
-        let topic = (symbol!("update"), token);
+        let topic = (Symbol::new(&env, "update"), token);
         env.events().publish(topic, timestamp);
     }
 
@@ -79,16 +76,16 @@ impl OracleContract {
         if is_initialized(&env) == false {
             panic!("Contract not initialized");
         }
-        
+
         // TODO: Check if the caller is in the list of users that can invoke this function
-        
+
         let upd_data: UpdData = env.storage().get_unchecked(&DataKey::Quote).unwrap();
 
         let timestamp = env.ledger().timestamp();
 
-            // Emit event
-            let topic = (symbol!("retrieve"), upd_data.token);
-            env.events().publish(topic, timestamp);
+        // Emit event
+        let topic = (Symbol::new( &env, "retrieve"), upd_data.token);
+        env.events().publish(topic, timestamp);
 
         let mut ret_data: Vec<i128> = Vec::new(&env);
         ret_data.push_back(upd_data.token);
