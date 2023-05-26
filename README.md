@@ -5,6 +5,7 @@ Our SCF#13 submission is a three-part project.
 DISCLAIMER: This is a proof of concept project and should NOT be used in production!!
 Please see our complete disclaimer below.
 
+>**Project is current and locked to Preview 9**
 The details of each piece of the project are described below.  We will be integrating
 these as they mature into our BTF platform.  The platform itself is used by businesses
 that are regulated and need regulatory and compliance reports, processes, and workflows.
@@ -12,9 +13,8 @@ that are regulated and need regulatory and compliance reports, processes, and wo
 Please see our website at [blocktimefinancial.com](https://blocktimefinancial.com) for more information and solutions.
 
 ## Option Smart Contract
-Current ContractId: dfc5fe46e7a39887634c32f76f87f92d0b7d939d85c56c6dab14e4a51ba36678
-Creation Transaction Hash: 1cd781d80fb55de42602611b4b3dd774e0ca8fc3c4e5061b09cfc58f9e80c6c0
-Install WASM Transaction Hash: 9c0a38733f7f1f5514f660177b4946d74e8cc46a2c126196b5b22fe27fa1aac7
+Current ContractId: e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23ea5e612353b19
+As StrKey: CDUUOYHANWRSQNX6RXGHDZ5THWYMKKL2RODO4LNQ4I7KLZQSGU5RSWB3
 ### USDC Token (Wrapped Stellar Classic Asset) used for collateral
 Current ContractId: (SAC Token ID): a95bdc05cf685ab4379aca06e3acdb9dc7d7ac869e199d617d60b2a9ba067db5
 Contract Name: USDC:GBL74ETHLQJQUQW7YQT4KO3HJVR74TIHSBW6ENRBSFHUTATBRKKLGW4Y
@@ -32,9 +32,8 @@ To make it into a Soroban token, we used the SAC token contract to "wrap" the cl
 For instructions on how to do this, please see Esteblock's [Token Playground](https://token-playground.gitbook.io/guide/)
 
 ## Oracle Smart Contract
-Current ContractId: cd0ca2f721d91df334b79fb1e043920919ed0c6b09f930af5048a50930fb7f44
-Creation Transaction Hash: 5f4518d455aab4451e6ecd0ccfbeb8e7a7e65ba99de543c5fae30cf24121dd6f
-Install WASM Transaction Hash: 83a2fd36151972693ca93e6d149852aa3bcb4d242f97ca27dfaa6dd913e707f0
+Current ContractId: e1f77313773d8e429836c080e5470bdfb28f34f33847827601b0c540ace109bf
+As a StrKey: CDQ7O4YTO46Y4QUYG3AIBZKHBPP3FDZU6M4EPATWAGYMKQFM4EE37UL6
 
 #### What it does
 The Oracle smart contract acts as the source of truth for pricing.  Other smart contracts that trust
@@ -44,7 +43,7 @@ of the implementor.
 #### Soroban-CLI
 Cmd to retrieve a price
 ```sh
-soroban contract invoke --id cd0ca2f721d91df334b79fb1e043920919ed0c6b09f930af5048a50930fb7f44 \
+soroban contract invoke --id e1f77313773d8e429836c080e5470bdfb28f34f33847827601b0c540ace109bf \
 --rpc-url https://rpc-futurenet.stellar.org:443/ --network-passphrase 'Test SDF Future Network ; October 2022' \
 --source SCIGOGUPFOZSEBVZBEF3BJL6SZGVSFYANQ6BZE6PTTQ7S4YXYDPY4JHL -- retrieve
 ```
