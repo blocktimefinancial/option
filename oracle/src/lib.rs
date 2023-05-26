@@ -1,10 +1,6 @@
 #![no_std]
 
-use soroban_sdk::{contractimpl, contracttype, Address, BytesN, Env, Symbol, Vec};
-
-mod token {
-    soroban_sdk::contractimport!(file = "../../soroban_token_spec.wasm");
-}
+use soroban_sdk::{contractimpl, contracttype, token, Address, BytesN, Env, Symbol, Vec};
 
 #[derive(Clone)]
 #[contracttype]
@@ -55,9 +51,9 @@ impl OracleContract {
             panic!("Contract not initialized");
         }
 
-        let pxpump_user: Address = env.storage().get_unchecked(&DataKey::PxPumpUser).unwrap();
-
-        pxpump_user.require_auth();
+        // TODO: Implement this check
+        //let pxpump_user: Address = env.storage().get_unchecked(&DataKey::PxPumpUser).unwrap();
+        //pxpump_user.require_auth();
 
         let upd_data = UpdData {
             token,

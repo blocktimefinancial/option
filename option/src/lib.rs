@@ -5,7 +5,7 @@
 //! token and allow both the buyer and a seller to claim it after the expiration
 //! date.  The contract is initialized with the option details.  The
 //! buyer and seller then complete the contract by depositing collateral
-//! comensurate with the trade price and maximum risk.  Both the buyer and seller
+//! commensurate with the trade price and maximum risk.  Both the buyer and seller
 //! can claim the collateral after the expiration time adjusted for the final
 //! settlement price, when the oracle has provided the price of the underlying
 //! asset.
@@ -25,11 +25,7 @@
 #![no_std]
 #![allow(dead_code)]
 
-use soroban_sdk::{contractimpl, contracttype, Address, BytesN, Env, Symbol, Vec};
-
-mod token {
-    soroban_sdk::contractimport!(file = "../../soroban_token_spec.wasm");
-}
+use soroban_sdk::{contractimpl, contracttype, token, Address, Env, Symbol, Vec};
 
 mod oracle {
     soroban_sdk::contractimport!(
@@ -37,6 +33,7 @@ mod oracle {
     );
 }
 
+// We're using const here because Rust doesn't allow BitOr for enums
 const SIDE_SELL: u32 = 0;
 const SIDE_BUY: u32 = 1;
 
@@ -109,14 +106,14 @@ pub struct Trade {
 pub struct Position {
     pub pos: i128,
     pub acct: Address,
-    pub token: BytesN<32>,
+    pub token: Address,
 }
 
 #[derive(Clone)]
 #[contracttype]
 pub struct OptionDef {
-    pub collateral_token: BytesN<32>,
-    pub underlying_token: BytesN<32>,
+    pub collateral_token: Address,
+    pub underlying_token: Address,
     pub underlying_symbol: Symbol,
     pub strike: i128,
     pub mkt_price: i128,
@@ -157,8 +154,8 @@ impl OptionContract {
         opt_type: u32,      // option type, only put option is supported at this time
         strike: i128,       // strike price
         exp: u64,           // expiration date and time
-        oracle: BytesN<32>, // oracle contract address
-        token: BytesN<32>,  // token address (e.g. USDC)
+        oracle: Address,    // oracle contract address
+        token: Address,     // token address (e.g. USDC)
         admin: Address,     // admin address
     ) {
         if !is_initialized(&env) {
@@ -221,7 +218,7 @@ impl OptionContract {
     pub fn trade(
         env: Env,
         counter_party: Address,
-        token: BytesN<32>,
+        token: Address,
         side: u32, // 0 = seller, 1 = buyer
         price: i128,
         qty: i128,
@@ -256,7 +253,7 @@ impl OptionContract {
             seller_deposit = (strike - price) * qty;
 
             // Transfer token from `counter_party` to this contract address.
-            token::Client::new(&env, &token).xfer(
+            token::Client::new(&env, &token).transfer(
                 &counter_party,
                 &env.current_contract_address(),
                 &seller_deposit,
@@ -276,7 +273,7 @@ impl OptionContract {
             buyer_deposit = price * qty;
 
             // Transfer token from `counter_party` to this contract address.
-            token::Client::new(&env, &token).xfer(
+            token::Client::new(&env, &token).transfer(
                 &counter_party,
                 &env.current_contract_address(),
                 &buyer_deposit,
@@ -299,7 +296,7 @@ impl OptionContract {
         if !is_initialized(&env) {
             panic!("contract not initialized");
         }
-        let oracle_contract_id: BytesN<32> = env.storage().get_unchecked(&DataKey::Oracle).unwrap();
+        let oracle_contract_id: Address = env.storage().get_unchecked(&DataKey::Oracle).unwrap();
         let client = oracle::Client::new(&env, &oracle_contract_id);
         let oracle_data: Vec<i128> = client.retrieve();
         // Store the data
@@ -370,7 +367,7 @@ impl OptionContract {
         //let trade_price: i128 = env.storage().get_unchecked(&DataKey::TradePx).unwrap();
         let trade_qty: i128 = env.storage().get_unchecked(&DataKey::TradeQty).unwrap();
         let market_price: i128 = env.storage().get_unchecked(&DataKey::MktPrice).unwrap();
-        let token: BytesN<32> = env.storage().get_unchecked(&DataKey::Token).unwrap();
+        let token: Address = env.storage().get_unchecked(&DataKey::Token).unwrap();
         let buyer_adr: Address = env.storage().get_unchecked(&DataKey::BAdr).unwrap();
         let seller_adr: Address = env.storage().get_unchecked(&DataKey::SAdr).unwrap();
         let trade_px: i128 = env.storage().get_unchecked(&DataKey::TradePx).unwrap();
@@ -418,7 +415,7 @@ impl OptionContract {
         if payout > 0 {
             // Transfer the stored amount of token to claimant after passing
             // all the checks.
-            token::Client::new(&env, &token).xfer(
+            token::Client::new(&env, &token).transfer(
                 &env.current_contract_address(),
                 &counter_party,
                 &payout,

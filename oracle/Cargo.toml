@@ -16,13 +16,13 @@ doctest = false
 testutils = ["soroban-sdk/testutils"]
 
 [dependencies]
-soroban-sdk = "0.7.0"
+soroban-sdk = "0.8.4"
 
 ##soroban-sdk = { path = "../../soroban-sdk", features = ["testutils"] }
 #soroban-auth = { path = "../../soroban-auth", features = ["testutils"] }
 
 [dev_dependencies]
-soroban-sdk = { version = "0.7.0", features = ["testutils"] }
+soroban-sdk = { version = "0.8.4", features = ["testutils"] }
 #soroban-auth = { path = "../../soroban-auth", features = ["testutils"] }
 
 [profile.release]

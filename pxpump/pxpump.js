@@ -15,8 +15,15 @@ const ONE_MINUTE_MS = 60 * 1000;
 const FIVE_MINUTES_MS = 5 * ONE_MINUTE_MS;
 
 // These are global variables for testing on FUTURENET
-const contractId =
-  "cd0ca2f721d91df334b79fb1e043920919ed0c6b09f930af5048a50930fb7f44";
+// Old 0.7.0 contractId, gone with the wind on futurenet reset
+// const contractId =
+//   "cd0ca2f721d91df334b79fb1e043920919ed0c6b09f930af5048a50930fb7f44";
+
+// New 0.8.0 contractId
+// const contractId =
+//   "b7664664ed4f93e1773448d8959e9bcc1cf213564f1ff6cc832a1793635050f8";
+const contractId = "e1f77313773d8e429836c080e5470bdfb28f34f33847827601b0c540ace109bf";
+
 const pk = "GDZ4CDLVSHQIAXRBTPHTPJ5MSCC6XO4R4IXRGRQ6VOVV2H2HFSQJHRYH";
 const secret = "SCIGOGUPFOZSEBVZBEF3BJL6SZGVSFYANQ6BZE6PTTQ7S4YXYDPY4JHL";
 
@@ -101,7 +108,15 @@ function createContractTransaction(sourceAccount, contractId, method, ...args) {
   let myArgs = args || [];
   const contract = new SorobanClient.Contract(contractId);
 
-  console.log(`Creating contract transaction for ${contractId}`);
+  console.log(
+    `Creating contract transaction for ${contractId} ${util.inspect(
+      sourceAccount,
+      false,
+      3
+    )}`
+  );
+  console.log(`Contract: ${util.inspect(contract, false, 3)}`);
+
   return new SorobanClient.TransactionBuilder(sourceAccount, {
     fee: 100,
     networkPassphrase: SorobanClient.Networks.FUTURENET,
@@ -125,29 +140,22 @@ async function invokeContract(params) {
     ...body.params // Method parameters
   );
 
+  // Little peek at the transaction before it's simulated
   console.log(`Tx XDR: ${tx.toXDR()}`);
   console.log(`Simulating transaction for ${body.contractId}`);
-   
-  // Sign the transaction
-   console.log(`Signing with secret: ${body.secret}`);
-   tx.sign(SorobanClient.Keypair.fromSecret(body.secret));
 
   const sim = await server.simulateTransaction(tx);
-  console.log("cost:", sim.cost);
-  console.log("results:", sim.results);
-  console.log("error:", sim.error);
-  console.log("latestLedger:", sim.latestLedger);
+  console.log(`Sim: ${util.inspect(sim, false, 5)}`);
 
   console.log(`Preparing transaction for ${body.contractId}`);
   tx = await server.prepareTransaction(tx, SorobanClient.Networks.FUTURENET);
 
-  // Log a quick peek at the transaction
-  console.log(`After prepareTransaction Tx: ${tx.toXDR()}`);
 
- 
+  console.log(`Signing with secret: ${body.secret}`);
+  tx.sign(SorobanClient.Keypair.fromSecret(body.secret));
 
-  // Log another quick peek at the transaction
-  console.log(`Tx XDR Before Sending: ${tx.toXDR()}`);
+    // Log a quick peek at the transaction after it is signed and before it's sent
+    console.log(`After prepareTransaction Tx: ${tx.toXDR()}`);
   let result = await server.sendTransaction(tx);
 
   // Peek at the results and then wait for the transaction to complete
@@ -182,7 +190,7 @@ async function invokeContract(params) {
   } else {
     console.log("Tx failed");
   }
-  
+
   return result;
 }
 
@@ -281,7 +289,7 @@ function toSorobanArgs(quote) {
   // wait until js-stellar-base has better conversion support.
   // Moving to 2 decimal places for now.
   // convert numbers to i128 values with 7 decimal places of precision.
-  price = bigNumberToI128(new BigNumber(price * 100));
+  price = bigNumberToI128(new BigNumber(Math.floor(price * 100)));
   console.dir(`Price: ${price}`);
   // Dates are also not supported, so we'll convert them to timestamps in
   // the same format as Soroban VM timestamps.
