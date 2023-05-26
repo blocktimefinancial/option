@@ -6,6 +6,7 @@ DISCLAIMER: This is a proof of concept project and should NOT be used in product
 Please see our complete disclaimer below.
 
 >**Project is current and locked to Preview 9**
+
 The details of each piece of the project are described below.  We will be integrating
 these as they mature into our BTF platform.  The platform itself is used by businesses
 that are regulated and need regulatory and compliance reports, processes, and workflows.
@@ -14,10 +15,15 @@ Please see our website at [blocktimefinancial.com](https://blocktimefinancial.co
 
 ## Option Smart Contract
 Current ContractId: e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23ea5e612353b19
+
 As StrKey: CDUUOYHANWRSQNX6RXGHDZ5THWYMKKL2RODO4LNQ4I7KLZQSGU5RSWB3
 ### USDC Token (Wrapped Stellar Classic Asset) used for collateral
 Current ContractId: (SAC Token ID): a95bdc05cf685ab4379aca06e3acdb9dc7d7ac869e199d617d60b2a9ba067db5
+
+As StrKey: CCUVXXAFZ5UFVNBXTLFANY5M3OO4PV5MQ2PBTHLBPVQLFKN2AZ63KERY
+
 Contract Name: USDC:GBL74ETHLQJQUQW7YQT4KO3HJVR74TIHSBW6ENRBSFHUTATBRKKLGW4Y
+
 Contract Symbol: USDC
 #### What it does
 The option smart contract is the "clearing corp" in this use case.  Option trades are submitted
@@ -31,8 +37,27 @@ settlement price from the oracle.  The token used for collateral is the USDC we 
 To make it into a Soroban token, we used the SAC token contract to "wrap" the classic Stellar asset.
 For instructions on how to do this, please see Esteblock's [Token Playground](https://token-playground.gitbook.io/guide/)
 
+Cmd to initialize the option contract
+```sh
+soroban contract invoke --id e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23ea5e612353b19 --sourc
+e SCIGOGUPFOZSEBVZBEF3BJL6SZGVSFYANQ6BZE6PTTQ7S4YXYDPY4JHL --rpc-url https://rpc-futurenet.stellar.org:443 --network-p
+assphrase 'Test SDF Future Network ; October 2022' -- init
+```
+
+Cmd to list an option contract
+```sh
+soroban contract invoke --id e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23ea5e612353b19 --source SCIGOGUPFOZSEBVZBEF3BJL6SZGVSFYANQ6BZE6PTTQ7S4YXYDPY4JHL --rpc-url https://rpc-futurenet.stellar.org:443 --network-passphrase 'Test SDF Future Network ; October 2022' -- list --opt_type 10 --strike 100 --exp 168782113900 --oracle CDQ7O4YTO46Y4QUYG3AIBZKHBPP3FDZU6M4EPATWAGYMKQFM4EE37UL6 --token CCUVXXAFZ5UFVNBXTLFANY5M3OO4PV5MQ2PBTHLBPVQLFKN2AZ63KERY 
+--admin GDZ4CDLVSHQIAXRBTPHTPJ5MSCC6XO4R4IXRGRQ6VOVV2H2HFSQJHRYH
+```
+
+Cmd to update the option contract from oracle
+```sh
+soroban contract invoke --id e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23ea5e612353b19 --source SCIGOGUPFOZSEBVZBEF3BJL6SZGVSFYANQ6BZE6PTTQ7S4YXYDPY4JHL --rpc-url https://rpc-futurenet.stellar.org:443 --network-passphrase 'Test SDF Future Network ; October 2022' -- upd_px
+```
+
 ## Oracle Smart Contract
 Current ContractId: e1f77313773d8e429836c080e5470bdfb28f34f33847827601b0c540ace109bf
+
 As a StrKey: CDQ7O4YTO46Y4QUYG3AIBZKHBPP3FDZU6M4EPATWAGYMKQFM4EE37UL6
 
 #### What it does
