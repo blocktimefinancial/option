@@ -57,10 +57,12 @@ function bigintToBuf(bn) {
 
 function bigNumberFromBytes(signed, ...bytes) {
   let sign = 1;
-  if (signed && bytes[0] === 0x80) {
+  if (signed && bytes[0] & 0x80) {
     // top bit is set, negative number.
     sign = -1;
     bytes[0] &= 0x7f;
+    console.log(bytes[0]);
+    console.log(`sign: ${sign}`);
   }
   let b = BigInt(0);
   for (let byte of bytes) {
@@ -72,12 +74,14 @@ function bigNumberFromBytes(signed, ...bytes) {
 
 function bigNumberToI128(value) {
   const b = BigInt(value.toFixed(0));
+  console.log(`b: ${b}`);
   const buf = bigintToBuf(b);
   if (buf.length > 16) {
     throw new Error("BigNumber overflows i128");
   }
 
   if (value.isNegative()) {
+    console.log("value is negative");
     // Clear the top bit
     buf[0] &= 0x7f;
   }
@@ -92,10 +96,15 @@ function bigNumberToI128(value) {
     padded[0] |= 0x80;
   }
 
+  console.log("Padded:", padded);
   const hi = new xdr.Int64(
     bigNumberFromBytes(false, ...padded.slice(4, 8)).toNumber(),
     bigNumberFromBytes(false, ...padded.slice(0, 4)).toNumber()
   );
+  console.log(padded);
+  console.log(padded.slice(12, 16));
+  console.log(padded.slice(8, 12));
+  console.log(bigNumberFromBytes(padded.slice(12,16)).toNumber());
   const lo = new xdr.Uint64(
     bigNumberFromBytes(false, ...padded.slice(12, 16)).toNumber(),
     bigNumberFromBytes(false, ...padded.slice(8, 12)).toNumber()
@@ -293,7 +302,10 @@ function toSorobanArgs(quote) {
   console.dir(`Price: ${price}`);
   // Dates are also not supported, so we'll convert them to timestamps in
   // the same format as Soroban VM timestamps.
-  timestamp = bigNumberToI128(new BigNumber(timestamp));
+  const ts = new BigNumber(timestamp);
+  console.log(`Timestamp: ${ts}`);
+
+  timestamp = bigNumberToI128(ts);
   console.dir(`Timestamp: ${timestamp}`);
 
   //Flags are a bit field, so we'll just set the third bit

@@ -1,6 +1,6 @@
 #![no_std]
 
-use soroban_sdk::{contractimpl, contracttype, token, Address, BytesN, Env, Symbol, Vec};
+use soroban_sdk::{contractimpl, contracttype, Address, BytesN, Env, Symbol, Vec};
 
 #[derive(Clone)]
 #[contracttype]
@@ -52,8 +52,8 @@ impl OracleContract {
         }
 
         // TODO: Implement this check
-        //let pxpump_user: Address = env.storage().get_unchecked(&DataKey::PxPumpUser).unwrap();
-        //pxpump_user.require_auth();
+        let pxpump_user: Address = env.storage().get_unchecked(&DataKey::PxPumpUser).unwrap();
+        pxpump_user.require_auth();
 
         let upd_data = UpdData {
             token,
@@ -95,3 +95,5 @@ impl OracleContract {
 fn is_initialized(env: &Env) -> bool {
     env.storage().has(&DataKey::Init)
 }
+
+mod test;
