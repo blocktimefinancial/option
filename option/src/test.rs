@@ -16,4 +16,7 @@ fn test() {
 
     // Test init
     client.init();
+
+    // Get the option specs
+    client.specs();
 }
