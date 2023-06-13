@@ -1,5 +1,5 @@
 # Option Settlement Smart Contract Project
-Soroban Option Project for SCF#13
+Soroban Option Project for SCF#13 and #15
 
 Our SCF#13 submission is a three-part project.
 DISCLAIMER: This is a proof of concept project and should NOT be used in production!!
