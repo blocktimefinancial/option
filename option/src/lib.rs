@@ -297,8 +297,18 @@ impl OptionContract {
             panic!("contract not initialized");
         }
         let oracle_contract_id: Address = env.storage().get_unchecked(&DataKey::Oracle).unwrap();
+
+        // Get without importing the oracle contract
+        let mut oracle_data: Vec<i128> = env.invoke_contract(
+            &oracle_contract_id,
+            &Symbol::short("retrieve"),
+            Vec::new(&env)
+        );
+
+        // Get with importing the oracle contract wasm
         let client = oracle::Client::new(&env, &oracle_contract_id);
-        let oracle_data: Vec<i128> = client.retrieve();
+        oracle_data: Vec<i128> = client.retrieve();
+
         // Store the data
 
         env.storage().set(
