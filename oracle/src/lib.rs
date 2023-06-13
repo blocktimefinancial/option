@@ -9,6 +9,7 @@ pub struct UpdData {
     pub price: i128,     // Price of asset in USD
     pub timestamp: i128, // Timestamp of price
     pub flags: i128, // Flags : MktOpen, MktClosed, Settlement, Halted, Bitmask 0,1,2,4,8,16,32... TBD
+    pub decimals: u32, // Decimals of price
 }
 
 pub struct OracleContract;
@@ -21,6 +22,7 @@ pub enum DataKey {
     PxPumpHash,     // SHA256 hash of the price pump code
     PxPumpUser,     // User for the price pump that invokes the update function
     Users(Address), // List of users that can invoke the retrieve function
+    Decimals
 }
 
 #[contractimpl]
@@ -46,7 +48,7 @@ impl OracleContract {
         env.storage().set(&DataKey::PxPumpHash, &hash);
     }
 
-    pub fn update(env: Env, token: i128, price: i128, timestamp: i128, flags: i128) {
+    pub fn update(env: Env, token: i128, price: i128, timestamp: i128, flags: i128, decimals: u32) {
         if is_initialized(&env) == false {
             panic!("Contract not initialized");
         }
@@ -60,6 +62,7 @@ impl OracleContract {
             price,
             timestamp,
             flags,
+            decimals,
         };
         env.storage().set(&DataKey::Quote, &upd_data);
 
@@ -88,6 +91,7 @@ impl OracleContract {
         ret_data.push_back(upd_data.price);
         ret_data.push_back(upd_data.timestamp);
         ret_data.push_back(upd_data.flags);
+        ret_data.push_back(upd_data.decimals as i128);
         ret_data
     }
 }

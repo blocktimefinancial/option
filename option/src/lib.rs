@@ -73,6 +73,7 @@ pub enum DataKey {
     OracleFlags,  // Oracle flags, bitmask for update details
     OracleSymbol, // Oracle Symbol, the underlying asset symbol in some normalized standard format *See SYMBOLOGY.md for details
     TradeId,      // Trade ID
+    Decimals,     // Number of decimals for the price and strike
 }
 
 #[derive(Clone)]
@@ -94,6 +95,7 @@ pub struct TimeBound {
 #[contracttype]
 pub struct Trade {
     pub price: i128,     // Price of the trade, in terms of collateral token
+    pub decimals: u32,    // Number of decimals for the price
     pub qty: i128,       // Quantity of the trade
     pub buyer: Address,  // Buyer address
     pub seller: Address, // Seller address
@@ -120,6 +122,7 @@ pub struct OptionDef {
     pub exp: TimeBound,
     pub opt_type: u32, // Bitmask for options details 0x1 = American, 0x2 = European, 0x4 = Call, 0x8 = Put, 0xF = Binary,...
     pub symbol: Symbol,
+    pub decimals: u32,
 }
 
 pub struct OptionContract;
@@ -153,6 +156,7 @@ impl OptionContract {
         env: Env,
         opt_type: u32,      // option type, only put option is supported at this time
         strike: i128,       // strike price
+        decimals: u32,       // number of decimals for the strike price
         exp: u64,           // expiration date and time
         oracle: Address,    // oracle contract address
         token: Address,     // token address (e.g. USDC)
@@ -161,6 +165,13 @@ impl OptionContract {
         if !is_initialized(&env) {
             panic!("contract is not initialized");
         }
+
+        // TODO: Should we let anyone list an option in the future? 
+        // For now, only the admin can list an option because we'll
+        // assume the admin is the authority for KYC/AML and other
+        // regulatory requirements.  The admin should know the buyer
+        // and seller and their addresses.
+
         // Check that the caller is the admin
         admin.require_auth();
 
@@ -206,6 +217,7 @@ impl OptionContract {
         env.storage().set(&DataKey::OracleFlags, &0);
         env.storage().set(&DataKey::TradeId, &0);
         env.storage().set(&DataKey::Admin, &admin);
+        env.storage().set(&DataKey::Decimals, &decimals);
     }
 
     // Return the option details
@@ -221,6 +233,7 @@ impl OptionContract {
         token: Address,
         side: u32, // 0 = seller, 1 = buyer
         price: i128,
+        decimals: u32,
         qty: i128,
         trade_id: u64,
     ) {
@@ -237,6 +250,13 @@ impl OptionContract {
 
         let mut seller_deposit: i128 = env.storage().get_unchecked(&DataKey::SDep).unwrap();
         let mut buyer_deposit: i128 = env.storage().get_unchecked(&DataKey::BDep).unwrap();
+
+        let opt_decimals: u32 = env.storage().get_unchecked(&DataKey::Decimals).unwrap();
+
+        // TODO: convert if necessary
+        if decimals != opt_decimals {
+            panic!("decimals mismatch");
+        }
 
         if check_time_bound(&env, &exp) {
             panic!("past expiration date time");
@@ -307,7 +327,7 @@ impl OptionContract {
 
         // Get with importing the oracle contract wasm
         let client = oracle::Client::new(&env, &oracle_contract_id);
-        oracle_data: Vec<i128> = client.retrieve();
+        oracle_data = client.retrieve();
 
         // Store the data
 
@@ -574,3 +594,5 @@ fn straddle_px(strk1_px: i128, px: i128) -> i128 {
     let diff = px - strk1_px;
     return diff.abs();
 }
+
+mod test;

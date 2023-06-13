@@ -30,5 +30,6 @@ fn test() {
     let price: i128 = 0;
     let timestamp: i128 = 0;
     let flags: i128 = 0;
-    client.update(&token, &price, &timestamp, &flags);
+    let decimals: u32 = 2;
+    client.update(&token, &price, &timestamp, &flags, &decimals);
 }
