@@ -7,10 +7,25 @@ const secret = "SCIGOGUPFOZSEBVZBEF3BJL6SZGVSFYANQ6BZE6PTTQ7S4YXYDPY4JHL";
 
 const server = SorobanClient("https://rpc-futurenet.stellar.org:443");
 
+/*
+Current ContractId: e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23ea5e612353b19
+
+As StrKey: CDUUOYHANWRSQNX6RXGHDZ5THWYMKKL2RODO4LNQ4I7KLZQSGU5RSWB3
+
+USDC Token (Wrapped Stellar Classic Asset) used for collateral
+Current ContractId: (SAC Token ID): a95bdc05cf685ab4379aca06e3acdb9dc7d7ac869e199d617d60b2a9ba067db5
+
+As StrKey: CCUVXXAFZ5UFVNBXTLFANY5M3OO4PV5MQ2PBTHLBPVQLFKN2AZ63KERY
+
+Contract Name: USDC:GBL74ETHLQJQUQW7YQT4KO3HJVR74TIHSBW6ENRBSFHUTATBRKKLGW4Y
+
+Contract Symbol: USDC
+*/
+
 async function main() {
     const account = await server.loadAccount(pk);
     const contract = new SorobanClient.Contract(
-        "e1f77313773d8e429836c080e5470bdfb28f34f33847827601b0c540ace109bf"
+        "CDUUOYHANWRSQNX6RXGHDZ5THWYMKKL2RODO4LNQ4I7KLZQSGU5RSWB3"
     );
     
     const tx = new SorobanClient.TransactionBuilder(account, {
