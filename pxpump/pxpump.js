@@ -22,7 +22,8 @@ const FIVE_MINUTES_MS = 5 * ONE_MINUTE_MS;
 // New 0.8.0 contractId for Oracle contract
 // const contractId =
 //   "b7664664ed4f93e1773448d8959e9bcc1cf213564f1ff6cc832a1793635050f8";
-const contractId = "e1f77313773d8e429836c080e5470bdfb28f34f33847827601b0c540ace109bf";
+//const contractId = "e1f77313773d8e429836c080e5470bdfb28f34f33847827601b0c540ace109bf";
+const contractId = "CDQ7O4YTO46Y4QUYG3AIBZKHBPP3FDZU6M4EPATWAGYMKQFM4EE37UL6";
 
 const pk = "GDZ4CDLVSHQIAXRBTPHTPJ5MSCC6XO4R4IXRGRQ6VOVV2H2HFSQJHRYH";
 const secret = "SCIGOGUPFOZSEBVZBEF3BJL6SZGVSFYANQ6BZE6PTTQ7S4YXYDPY4JHL";
@@ -206,7 +207,7 @@ function toSorobanArgs(quote) {
     `Market state: ${marketState}, flags: ${flags}, price: ${price}, timestamp: ${timestamp}`
   );
   // from the quote.  We'll just stringify the quote for now.
-  let symbolCode = bigNumberToI128(new BigNumber(1));
+  let symbolCode = SorobanClient.nativeToScVal(1, {type: "i128"});
   console.dir(`Symbol code: ${symbolCode}`);
 
   // We know that Soroban VM doesn't support floating point numbers, so we'll
@@ -214,18 +215,18 @@ function toSorobanArgs(quote) {
   // wait until js-stellar-base has better conversion support.
   // Moving to 2 decimal places for now.
   // convert numbers to i128 values with 7 decimal places of precision.
-  price = bigNumberToI128(new BigNumber(Math.floor(price * 100)));
+  price = SorobanClient.nativeToScVal(Math.floor(price * 100), {type: "i128"});
   console.dir(`Price: ${price}`);
   // Dates are also not supported, so we'll convert them to timestamps in
   // the same format as Soroban VM timestamps.
-  const ts = new BigNumber(timestamp);
+  const ts = timestamp;
   console.log(`Timestamp: ${ts}`);
 
-  timestamp = bigNumberToI128(ts);
+  timestamp =  SorobanClient.nativeToScVal(ts, {type: "i128"});
   console.dir(`Timestamp: ${timestamp}`);
 
   //Flags are a bit field, so we'll just set the third bit
-  flags = bigNumberToI128(new BigNumber(flags));
+  flags = SorobanClient.nativeToScVal(flags, {type: "i128"});
   console.dir(`Flags: ${flags}`);
 
   return [symbolCode, price, timestamp, flags];
@@ -273,10 +274,6 @@ async function timerFunc(scDetailsObj) {
 async function main() {
   kp = SorobanClient.Keypair.fromSecret(secret);
   console.log(`Updating ${contractId} using ${pk}`);
-
-  console.dir(SorobanClient.nativeToScVal("Hi Mitchell", 'Symbol'));
-
-  return;
 
   const scDetailsObj = {
     kp,

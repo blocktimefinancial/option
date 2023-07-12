@@ -5,7 +5,7 @@ const secret = "SCIGOGUPFOZSEBVZBEF3BJL6SZGVSFYANQ6BZE6PTTQ7S4YXYDPY4JHL";
 
 // Call the smart option contract function "list"
 
-const server = SorobanClient("https://rpc-futurenet.stellar.org:443");
+const server = new SorobanClient.Server("https://rpc-futurenet.stellar.org:443");
 
 /*
 Current ContractId: e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23ea5e612353b19
@@ -22,8 +22,10 @@ Contract Name: USDC:GBL74ETHLQJQUQW7YQT4KO3HJVR74TIHSBW6ENRBSFHUTATBRKKLGW4Y
 Contract Symbol: USDC
 */
 
+const adr = new SorobanClient.Address("GBL74ETHLQJQUQW7YQT4KO3HJVR74TIHSBW6ENRBSFHUTATBRKKLGW4Y").toScVal();
+
 async function main() {
-    const account = await server.loadAccount(pk);
+    const account = new SorobanClient.Account(pk, "1");
     const contract = new SorobanClient.Contract(
         "CDUUOYHANWRSQNX6RXGHDZ5THWYMKKL2RODO4LNQ4I7KLZQSGU5RSWB3"
     );
@@ -37,11 +39,13 @@ async function main() {
         .build();
     
     tx.sign(SorobanClient.Keypair.fromSecret(secret));
-    
+
     try {
         const response = await server.submitTransaction(tx);
         console.log( "Success! Results:", response );
     } catch (e) {
-        console.log( "Failure! Error:", e.response.data.extras.result_codes );
+        console.dir( "Failure! Error:", e );
     }
 }
+
+main();
