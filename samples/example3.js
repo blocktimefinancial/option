@@ -27,7 +27,7 @@ Contract Symbol: USDC
 //write a function to create a contract transaction
 
 function createContractTransaction(networkPassphrase, sourceAccount, contractId, method, ...args) {
-    console.log(`Inside createContractTransaction with ${contractId}`)
+    console.log(`Inside createContractTransaction with contract id: ${contractId}, method: ${method}`)
     let myArgs = args || [];
     const contract = new SorobanClient.Contract(contractId);
 
@@ -44,7 +44,7 @@ function createContractTransaction(networkPassphrase, sourceAccount, contractId,
         fee: 100,
         networkPassphrase: networkPassphrase,
     })
-        .addOperation(contractId.call(method, ...myArgs))
+        .addOperation(contract.call(method, ...myArgs))
         .setTimeout(SorobanClient.TimeoutInfinite)
         .build();
 }
@@ -127,16 +127,21 @@ async function main() {
     //     token:  "a95bdc05cf685ab4379aca06e3acdb9dc7d7ac869e199d617d60b2a9ba067db5",
     //     admin:  "GBL74ETHLQJQUQW7YQT4KO3HJVR74TIHSBW6ENRBSFHUTATBRKKLGW4Y"
     // }
+    const address1 = new SorobanClient.Address("e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23ea5e612353b19").toScVal();
+    const address2 = new SorobanClient.Address("a95bdc05cf685ab4379aca06e3acdb9dc7d7ac869e199d617d60b2a9ba067db5").toScVal();
+    const address3 = new SorobanClient.Address("GBL74ETHLQJQUQW7YQT4KO3HJVR74TIHSBW6ENRBSFHUTATBRKKLGW4Y").toScVal();
 
     const params = [
-        "test",
         SorobanClient.nativeToScVal(1, {type: 'u32'}),
         SorobanClient.nativeToScVal(1, {type: 'i128'}),
         SorobanClient.nativeToScVal(7, {type: 'u32'}),
         SorobanClient.nativeToScVal(1625097600, {type: 'u64'}),
-        "e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23ea5e612353b19",
-        "a95bdc05cf685ab4379aca06e3acdb9dc7d7ac869e199d617d60b2a9ba067db5",
-        "GBL74ETHLQJQUQW7YQT4KO3HJVR74TIHSBW6ENRBSFHUTATBRKKLGW4Y"
+        address1,
+        address2,
+        address3,
+        // SorobanClient.Address("e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23ea5e612353b19").toScVal(),
+        // SorobanClient.Address("a95bdc05cf685ab4379aca06e3acdb9dc7d7ac869e199d617d60b2a9ba067db5").toScVal(),
+        // SorobanClient.Address("GBL74ETHLQJQUQW7YQT4KO3HJVR74TIHSBW6ENRBSFHUTATBRKKLGW4Y").toScVal(),
     ]
 
     const args = {
