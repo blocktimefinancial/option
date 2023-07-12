@@ -5,7 +5,7 @@ const secret = "SCIGOGUPFOZSEBVZBEF3BJL6SZGVSFYANQ6BZE6PTTQ7S4YXYDPY4JHL";
 
 // Call the smart option contract function "list"
 
-const server = SorobanClient("https://rpc-futurenet.stellar.org:443");
+const server = new SorobanClient.Server("https://rpc-futurenet.stellar.org:443");
 
 /*
 Current ContractId: e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23ea5e612353b19
@@ -22,26 +22,158 @@ Contract Name: USDC:GBL74ETHLQJQUQW7YQT4KO3HJVR74TIHSBW6ENRBSFHUTATBRKKLGW4Y
 Contract Symbol: USDC
 */
 
-async function main() {
-    const account = await server.loadAccount(pk);
-    const contract = new SorobanClient.Contract(
-        "CDUUOYHANWRSQNX6RXGHDZ5THWYMKKL2RODO4LNQ4I7KLZQSGU5RSWB3"
-    );
-    
-    const tx = new SorobanClient.TransactionBuilder(account, {
+//const adr = new SorobanClient.Address("GBL74ETHLQJQUQW7YQT4KO3HJVR74TIHSBW6ENRBSFHUTATBRKKLGW4Y").toScVal();
+
+//write a function to create a contract transaction
+
+function createContractTransaction(networkPassphrase, sourceAccount, contractId, method, ...args) {
+    console.log(`Inside createContractTransaction with ${contractId}`)
+    let myArgs = args || [];
+    const contract = new SorobanClient.Contract(contractId);
+
+    // console.log(
+    //     `Creating contract transaction for ${contractId} ${util.inspect(
+    //         sourceAccount,
+    //         false,
+    //         3,
+    //         true
+    //     )} ${method} ${myArgs}`
+    // );
+
+    return new SorobanClient.TransactionBuilder(sourceAccount, {
         fee: 100,
-        networkPassphrase: SorobanClient.Networks.FUTURENET,
+        networkPassphrase: networkPassphrase,
     })
-        .addOperation(contract.call("list"))
+        .addOperation(contractId.call(method, ...myArgs))
         .setTimeout(SorobanClient.TimeoutInfinite)
         .build();
-    
-    tx.sign(SorobanClient.Keypair.fromSecret(secret));
-    
-    try {
-        const response = await server.submitTransaction(tx);
-        console.log( "Success! Results:", response );
-    } catch (e) {
-        console.log( "Failure! Error:", e.response.data.extras.result_codes );
-    }
 }
+
+
+
+async function invokeContract(params){
+    console.log("Inside invokeContract")
+    let body = params.body;
+    let src = params.publicKey;
+    let source = await server.getAccount(body.publicKey)
+
+    console.log("Calling createContractTransaction")
+    let tx = createContractTransaction(
+        SorobanClient.Networks.FUTURENET,
+        source,
+        body.contractId,
+        body.method,
+        ...body.params
+    );
+
+    const sim = await server.simulateTransaction(tx);
+
+    tx = await server.prepareTransaction(tx, SorobanClient.Networks.FUTURENET);
+
+    tx.sign(SorobanClient.Keypair.fromSecret(body.secret));
+    
+    let result = await server.submitTransaction(tx);
+
+    const hash = result.hash;
+    let status = result.status;
+    let timeout = 0;
+    let maxTimeout = 30000;
+    do {
+        await sleep(2000);
+        timeout += 1000;
+        console.log(`Looking for Tx status: ${hash} after ${timeout} ms...`);
+        result = await server.getTransaction(hash);
+        console.dir(result);
+        status = result.status;
+        console.log("Tx status: ", status);
+      } while (
+        (status.toLowerCase() === "pending" ||
+          status.toLowerCase() === "not_found") &&
+        timeout < maxTimeout
+      );
+      console.log(
+        `Final Tx status: ${status} after ${timeout} ms, tx ${
+          timeout < maxTimeout ? "did not" : "did"
+        } timeout`
+    );
+
+    // Emit event
+    if (status.toLowerCase() === "success") {
+        console.log("Tx succeeded");
+    } else {
+        console.log("Tx failed");
+    }
+
+    return result;
+}
+
+
+async function main() {
+    const account = await server.getAccount(pk);
+    // const contract = new SorobanClient.Contract(
+    //     "e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23ea5e612353b19"
+    // );
+    const contract = "e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23ea5e612353b19"
+
+    console.log(contract);
+
+    // const params = {
+    //     env: "test",
+    //     opt_type: "put",
+    //     strike: 0.5,
+    //     decimals: 7,
+    //     exp: 1625097600,
+    //     oracle: "e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23ea5e612353b19",
+    //     token:  "a95bdc05cf685ab4379aca06e3acdb9dc7d7ac869e199d617d60b2a9ba067db5",
+    //     admin:  "GBL74ETHLQJQUQW7YQT4KO3HJVR74TIHSBW6ENRBSFHUTATBRKKLGW4Y"
+    // }
+
+    const params = [
+        "test",
+        SorobanClient.nativeToScVal(1, {type: 'u32'}),
+        SorobanClient.nativeToScVal(1, {type: 'i128'}),
+        SorobanClient.nativeToScVal(7, {type: 'u32'}),
+        SorobanClient.nativeToScVal(1625097600, {type: 'u64'}),
+        "e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23ea5e612353b19",
+        "a95bdc05cf685ab4379aca06e3acdb9dc7d7ac869e199d617d60b2a9ba067db5",
+        "GBL74ETHLQJQUQW7YQT4KO3HJVR74TIHSBW6ENRBSFHUTATBRKKLGW4Y"
+    ]
+
+    const args = {
+        body: 
+        {
+            params: params,
+            method: "list",
+            contractId: contract,
+        }
+    }
+    console.log("Calling invoke contract")
+    return await invokeContract({
+        body: {
+            publicKey: pk,
+            secret: secret,
+            params: params,
+            method: "list",
+            contractId: contract,
+        }
+    })
+
+    // const tx = new SorobanClient.TransactionBuilder(account, {
+    //     fee: 100,
+    //     networkPassphrase: SorobanClient.Networks.FUTURENET,
+    // })
+    //     .addOperation(contract.call("list"))
+    //     .setTimeout(SorobanClient.TimeoutInfinite)
+    //     .build();
+    
+    // tx.sign(SorobanClient.Keypair.fromSecret(secret));
+    
+    // try {
+    //     const response = await server.submitTransaction(tx);
+    //     console.log( "Success! Results:", response );
+    // } catch (e) {
+    //     console.log( "Failure! Error:", e.response.data.extras.result_codes );
+    // }
+}
+
+main();
