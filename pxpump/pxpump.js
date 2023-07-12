@@ -19,7 +19,7 @@ const FIVE_MINUTES_MS = 5 * ONE_MINUTE_MS;
 // const contractId =
 //   "cd0ca2f721d91df334b79fb1e043920919ed0c6b09f930af5048a50930fb7f44";
 
-// New 0.8.0 contractId
+// New 0.8.0 contractId for Oracle contract
 // const contractId =
 //   "b7664664ed4f93e1773448d8959e9bcc1cf213564f1ff6cc832a1793635050f8";
 const contractId = "e1f77313773d8e429836c080e5470bdfb28f34f33847827601b0c540ace109bf";
@@ -27,93 +27,9 @@ const contractId = "e1f77313773d8e429836c080e5470bdfb28f34f33847827601b0c540ace1
 const pk = "GDZ4CDLVSHQIAXRBTPHTPJ5MSCC6XO4R4IXRGRQ6VOVV2H2HFSQJHRYH";
 const secret = "SCIGOGUPFOZSEBVZBEF3BJL6SZGVSFYANQ6BZE6PTTQ7S4YXYDPY4JHL";
 
-// These conversion functions are from the soroban-example-dapp project
-// and converted from typescript to javascript.
-// Thanks Paul and Estaban!
-function bigintToBuf(bn) {
-  var hex = BigInt(bn).toString(16).replace(/^-/, "");
-  if (hex.length % 2) {
-    hex = "0" + hex;
-  }
+// Removed conversion functions as these are now part of the js-soroban-client library
 
-  var len = hex.length / 2;
-  var u8 = new Uint8Array(len);
-
-  var i = 0;
-  var j = 0;
-  while (i < len) {
-    u8[i] = parseInt(hex.slice(j, j + 2), 16);
-    i += 1;
-    j += 2;
-  }
-
-  if (bn < BigInt(0)) {
-    // Set the top bit
-    u8[0] |= 0x80;
-  }
-
-  return Buffer.from(u8);
-}
-
-function bigNumberFromBytes(signed, ...bytes) {
-  let sign = 1;
-  if (signed && bytes[0] & 0x80) {
-    // top bit is set, negative number.
-    sign = -1;
-    bytes[0] &= 0x7f;
-    console.log(bytes[0]);
-    console.log(`sign: ${sign}`);
-  }
-  let b = BigInt(0);
-  for (let byte of bytes) {
-    b <<= BigInt(8);
-    b |= BigInt(byte);
-  }
-  return new BigNumber(b.toString()).multipliedBy(sign);
-}
-
-function bigNumberToI128(value) {
-  const b = BigInt(value.toFixed(0));
-  console.log(`b: ${b}`);
-  const buf = bigintToBuf(b);
-  if (buf.length > 16) {
-    throw new Error("BigNumber overflows i128");
-  }
-
-  if (value.isNegative()) {
-    console.log("value is negative");
-    // Clear the top bit
-    buf[0] &= 0x7f;
-  }
-
-  // left-pad with zeros up to 16 bytes
-  let padded = Buffer.alloc(16);
-  buf.copy(padded, padded.length - buf.length);
-  //console.debug({ value: value.toString(), padded });
-
-  if (value.isNegative()) {
-    // Set the top bit
-    padded[0] |= 0x80;
-  }
-
-  console.log("Padded:", padded);
-  const hi = new xdr.Int64(
-    bigNumberFromBytes(false, ...padded.slice(4, 8)).toNumber(),
-    bigNumberFromBytes(false, ...padded.slice(0, 4)).toNumber()
-  );
-  console.log(padded);
-  console.log(padded.slice(12, 16));
-  console.log(padded.slice(8, 12));
-  console.log(bigNumberFromBytes(padded.slice(12,16)).toNumber());
-  const lo = new xdr.Uint64(
-    bigNumberFromBytes(false, ...padded.slice(12, 16)).toNumber(),
-    bigNumberFromBytes(false, ...padded.slice(8, 12)).toNumber()
-  );
-
-  return xdr.ScVal.scvI128(new xdr.Int128Parts({ lo, hi }));
-}
-
-function createContractTransaction(sourceAccount, contractId, method, ...args) {
+function createContractTransaction(networkPassphrase, sourceAccount, contractId, method, ...args) {
   let myArgs = args || [];
   const contract = new SorobanClient.Contract(contractId);
 
@@ -128,7 +44,7 @@ function createContractTransaction(sourceAccount, contractId, method, ...args) {
 
   return new SorobanClient.TransactionBuilder(sourceAccount, {
     fee: 100,
-    networkPassphrase: SorobanClient.Networks.FUTURENET,
+    networkPassphrase: networkPassphrase,
   })
     .addOperation(contract.call(method, ...myArgs))
     .setTimeout(SorobanClient.TimeoutInfinite)
@@ -357,6 +273,10 @@ async function timerFunc(scDetailsObj) {
 async function main() {
   kp = SorobanClient.Keypair.fromSecret(secret);
   console.log(`Updating ${contractId} using ${pk}`);
+
+  console.dir(SorobanClient.nativeToScVal("Hi Mitchell", 'Symbol'));
+
+  return;
 
   const scDetailsObj = {
     kp,
