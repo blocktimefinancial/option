@@ -32,6 +32,8 @@ const secret = "SCIGOGUPFOZSEBVZBEF3BJL6SZGVSFYANQ6BZE6PTTQ7S4YXYDPY4JHL";
 
 function createContractTransaction(networkPassphrase, sourceAccount, contractId, method, ...args) {
   let myArgs = args || [];
+  contractId = "e1f77313773d8e429836c080e5470bdfb28f34f33847827601b0c540ace109bf";
+  
   const contract = new SorobanClient.Contract(contractId);
 
   console.log(
@@ -41,8 +43,7 @@ function createContractTransaction(networkPassphrase, sourceAccount, contractId,
       3
     )}`
   );
-  console.log(`Contract: ${util.inspect(contract, false, 3)}`);
-
+  
   return new SorobanClient.TransactionBuilder(sourceAccount, {
     fee: 100,
     networkPassphrase: networkPassphrase,
@@ -58,12 +59,14 @@ async function invokeContract(params) {
   // Load the account
   let source = await server.getAccount(body.publicKey);
 
+  console.log(`Calling createContractTransaction`);
   // Create a transaction to call the contract
   let tx = createContractTransaction(
-    source, // Source account
-    body.contractId, // Contract ID
-    body.method, // Method name
-    ...body.params // Method parameters
+    SorobanClient.Networks.FUTURENET, // Network
+    source,           // Source account
+    body.contractId,  // Contract ID
+    body.method,      // Method name
+    ...body.params    // Method parameters
   );
 
   // Little peek at the transaction before it's simulated
@@ -237,17 +240,16 @@ function toSorobanArgs(quote) {
 async function updateSmartContract(scDetailsObj, quote) {
   // Create the transaction to update the smart contract
 
-  const account = await server.getAccount(pk);
-  console.log(`Account: ${account._accountId} SeqNum: ${account.sequence}`);
-
+  let minAccount = await server.getAccount(pk);
+  console.log(`Account: ${minAccount._accountId} SeqNum: ${minAccount.sequence}`);
+  let account = new SorobanClient.Account(minAccount._accountId, minAccount.sequence.toString());
   // We don't know what the fees will be, so we'll just use a constant fee
   const fee = 100;
 
   console.log(`UpdatingSmartContract ${contractId} using ${pk}`);
   const sorobanArgs = toSorobanArgs(quote);
-  console.log(`Converted quote: ${util.inspect(sorobanArgs, false, 5)}`);
-
-  return await invokeContract({
+  //console.log(`Converted quote: ${util.inspect(sorobanArgs, false, 5)}`);
+  let params = {
     body: {
       publicKey: pk,
       secret: secret,
@@ -255,7 +257,10 @@ async function updateSmartContract(scDetailsObj, quote) {
       contractId: contractId,
       method: "update",
     },
-  });
+  };
+
+  console.log(`Params: ${util.inspect(params, false, 5)}`);
+  return await invokeContract(params);
 }
 
 // Update the smart contract with the latest quote

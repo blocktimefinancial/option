@@ -34,7 +34,7 @@ async function main() {
         fee: 100,
         networkPassphrase: SorobanClient.Networks.FUTURENET,
     })
-        .addOperation(contract.call("list"))
+        .addOperation(contract.call("init"))
         .setTimeout(SorobanClient.TimeoutInfinite)
         .build();
     
