@@ -127,21 +127,21 @@ async function main() {
     //     token:  "a95bdc05cf685ab4379aca06e3acdb9dc7d7ac869e199d617d60b2a9ba067db5",
     //     admin:  "GBL74ETHLQJQUQW7YQT4KO3HJVR74TIHSBW6ENRBSFHUTATBRKKLGW4Y"
     // }
-    const address1 = new SorobanClient.Address("e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23ea5e612353b19").toScVal();
-    const address2 = new SorobanClient.Address("a95bdc05cf685ab4379aca06e3acdb9dc7d7ac869e199d617d60b2a9ba067db5").toScVal();
-    const address3 = new SorobanClient.Address("GBL74ETHLQJQUQW7YQT4KO3HJVR74TIHSBW6ENRBSFHUTATBRKKLGW4Y").toScVal();
+    //const address1 = new SorobanClient.Address("e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23ea5e612353b19").toScVal();
+    // const address2 = new SorobanClient.Address("a95bdc05cf685ab4379aca06e3acdb9dc7d7ac869e199d617d60b2a9ba067db5").toScVal();
+    // const address3 = new SorobanClient.Address("GBL74ETHLQJQUQW7YQT4KO3HJVR74TIHSBW6ENRBSFHUTATBRKKLGW4Y").toScVal();
 
     const params = [
         SorobanClient.nativeToScVal(1, {type: 'u32'}),
         SorobanClient.nativeToScVal(1, {type: 'i128'}),
         SorobanClient.nativeToScVal(7, {type: 'u32'}),
         SorobanClient.nativeToScVal(1625097600, {type: 'u64'}),
-        address1,
-        address2,
-        address3,
-        // SorobanClient.Address("e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23ea5e612353b19").toScVal(),
-        // SorobanClient.Address("a95bdc05cf685ab4379aca06e3acdb9dc7d7ac869e199d617d60b2a9ba067db5").toScVal(),
-        // SorobanClient.Address("GBL74ETHLQJQUQW7YQT4KO3HJVR74TIHSBW6ENRBSFHUTATBRKKLGW4Y").toScVal(),
+        // address1,
+        // address2,
+        // address3,
+        SorobanClient.nativeToScVal("e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23ea5e612353b19"),
+        SorobanClient.nativeToScVal("a95bdc05cf685ab4379aca06e3acdb9dc7d7ac869e199d617d60b2a9ba067db5"),
+        SorobanClient.nativeToScVal("GBL74ETHLQJQUQW7YQT4KO3HJVR74TIHSBW6ENRBSFHUTATBRKKLGW4Y"),
     ]
 
     const args = {
