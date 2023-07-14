@@ -21,7 +21,7 @@ Contract Name: USDC:GBL74ETHLQJQUQW7YQT4KO3HJVR74TIHSBW6ENRBSFHUTATBRKKLGW4Y
 
 Contract Symbol: USDC
 */
-
+//test
 //const adr = new SorobanClient.Address("GBL74ETHLQJQUQW7YQT4KO3HJVR74TIHSBW6ENRBSFHUTATBRKKLGW4Y").toScVal();
 
 //write a function to create a contract transaction
