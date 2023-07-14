@@ -1,6 +1,7 @@
-use soroban_sdk::{Env,Symbol};
-use crate::{Testsc, TestscClient};
 
+
+use soroban_sdk::{symbol_short, Env};
+use crate::{Testsc, TestscClient};
 
 #[test]
 fn test() {
@@ -11,5 +12,5 @@ fn test() {
     let client = TestscClient::new(&env, &contract_id);
 
     // Test init
-    client.hello(&Symbol::short("World"));
+    client.hello(&symbol_short!("World"));
 }

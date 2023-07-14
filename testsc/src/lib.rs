@@ -1,14 +1,15 @@
 #![no_std]
 
-use soroban_sdk::{contractimpl, vec, Env, Symbol, Vec, Address, Bytes};
-
+use soroban_sdk::{contractimpl, contract, vec, symbol_short, Env, Symbol, Vec, Address, Bytes};
+#[contract]
 pub struct Testsc;
 
 #[contractimpl]
 impl Testsc {
     // This is a simple function that returns a vector of symbols
     pub fn hello(env: Env, to: Symbol) -> Vec<Symbol> {
-        vec![&env, Symbol::short("Hello"), to]
+        const HELLO : Symbol = symbol_short!("Hello");
+        vec![&env, HELLO, to]
     }
 
     // Now we start adding some more complex functions, one parameter type at a time
@@ -56,6 +57,11 @@ impl Testsc {
         v
     }
 
+    pub fn signing_test(env: Env, a: Address) -> Address {
+        a.require_auth();
+        a
+    }
+    
     pub fn test_all(
         env: Env,
         pu32: u32,

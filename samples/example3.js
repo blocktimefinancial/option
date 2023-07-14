@@ -30,6 +30,8 @@ async function main() {
         "CDUUOYHANWRSQNX6RXGHDZ5THWYMKKL2RODO4LNQ4I7KLZQSGU5RSWB3"
     );
     
+    const scVal = SorobanClient.nativeToScVal(1);
+    
     const tx = new SorobanClient.TransactionBuilder(account, {
         fee: 100,
         networkPassphrase: SorobanClient.Networks.FUTURENET,
