@@ -65,10 +65,13 @@ async function invokeContract(params){
         body.method,
         ...body.params
     );
+    console.log("Back from createContractTransaction. Simulating...")
 
     const sim = await server.simulateTransaction(tx);
+    console.log("Simulation complete. Prepping tx...")
 
     tx = await server.prepareTransaction(tx, SorobanClient.Networks.FUTURENET);
+    console.log("Prep Complete. Signing...")
 
     tx.sign(SorobanClient.Keypair.fromSecret(body.secret));
     
