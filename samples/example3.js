@@ -1,4 +1,5 @@
 const SorobanClient = require("soroban-client");
+const util = require("util");
 
 const pk = "GDZ4CDLVSHQIAXRBTPHTPJ5MSCC6XO4R4IXRGRQ6VOVV2H2HFSQJHRYH";
 const secret = "SCIGOGUPFOZSEBVZBEF3BJL6SZGVSFYANQ6BZE6PTTQ7S4YXYDPY4JHL";
@@ -54,8 +55,8 @@ function createContractTransaction(networkPassphrase, sourceAccount, contractId,
 async function invokeContract(params){
     console.log("Inside invokeContract")
     let body = params.body;
-    let src = params.publicKey;
     let source = await server.getAccount(body.publicKey)
+    console.log(source);
 
     console.log("Calling createContractTransaction")
     let tx = createContractTransaction(
@@ -65,12 +66,16 @@ async function invokeContract(params){
         body.method,
         ...body.params
     );
-    console.log("Back from createContractTransaction. Simulating...")
+    console.log("Back from createContractTransaction.")
+    console.log(`Contract: ${util.inspect(tx, false, 3)}`)
 
-    const sim = await server.simulateTransaction(tx);
-    console.log("Simulation complete. Prepping tx...")
+    console.log("Simulating...")
+    const sim = await server.simulateTransaction(tx)
+    console.log("Simulation complete.")
+    console.log(`Sim: ${util.inspect(sim, false, 5)}`)
 
-    tx = await server.prepareTransaction(tx, SorobanClient.Networks.FUTURENET);
+    console.log("Prepping tx...")
+    tx = await server.prepareTransaction(tx, "Test SDF Future Network ; October 2022");
     console.log("Prep Complete. Signing...")
 
     tx.sign(SorobanClient.Keypair.fromSecret(body.secret));
@@ -117,8 +122,6 @@ async function main() {
     //     "e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23ea5e612353b19"
     // );
     const contract = "e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23ea5e612353b19"
-
-    console.log(contract);
 
     // const params = {
     //     env: "test",
