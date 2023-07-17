@@ -1,9 +1,18 @@
+// This example is for Preview 10 of the Soroban SDK.  SorobanClient is now
+// version 0.9.1
 const SorobanClient = require("soroban-client");
 
+// Futurenet admin address/account for the Smart Option Contract Project.
 const pk = "GDZ4CDLVSHQIAXRBTPHTPJ5MSCC6XO4R4IXRGRQ6VOVV2H2HFSQJHRYH";
 const secret = "SCIGOGUPFOZSEBVZBEF3BJL6SZGVSFYANQ6BZE6PTTQ7S4YXYDPY4JHL";
 
-// Call the smart option contract function "list"
+
+// Extra test addresses/accounts
+const addr1 = "";
+const addr1Secret = "";
+const addr2 = "";
+const addr2Secret = "";
+
 
 const server = new SorobanClient.Server("https://rpc-futurenet.stellar.org:443");
 
@@ -31,7 +40,7 @@ async function main() {
     );
     
     const scVal = SorobanClient.nativeToScVal(1);
-    
+
     const tx = new SorobanClient.TransactionBuilder(account, {
         fee: 100,
         networkPassphrase: SorobanClient.Networks.FUTURENET,
@@ -42,12 +51,31 @@ async function main() {
     
     tx.sign(SorobanClient.Keypair.fromSecret(secret));
 
-    try {
-        const response = await server.submitTransaction(tx);
-        console.log( "Success! Results:", response );
-    } catch (e) {
-        console.dir( "Failure! Error:", e );
-    }
+    result = await SorobanClient.sendTransaction(tx);
+
+  console.log("Tx sendTransaction result: ", result.result);
+  const hash = result.result.hash;
+  let status = result.result.status;
+  let timeout = 0;
+  let maxTimeout = 30000;
+  do {
+    await sleep(2000);
+    timeout += 1000;
+    console.log(`Looking for Tx status: ${hash} after ${timeout} ms...`);
+    result = await SorobanClient.getTransaction(hash);
+    console.dir(result);
+    status = result.result.status;
+    console.log("Tx status: ", status);
+  } while (
+    (status.toLowerCase() === "pending" ||
+      status.toLowerCase() === "not_found") &&
+    timeout < maxTimeout
+  );
+  console.log(
+    `Final Tx status: ${status} after ${timeout} ms, tx ${
+      timeout < maxTimeout ? "did not" : "did"
+    } timeout`
+  );
 }
 
 main();

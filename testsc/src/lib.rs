@@ -62,6 +62,12 @@ impl Testsc {
         a
     }
     
+    pub fn dbl_sign_test(env: Env, a: Address, b: Address) -> Address {
+        a.require_auth();
+        b.require_auth();
+        a
+    }
+
     pub fn test_all(
         env: Env,
         pu32: u32,
