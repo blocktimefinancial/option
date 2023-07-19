@@ -2,6 +2,7 @@ const SorobanClient = require("soroban-client");
 const xdr = SorobanClient.xdr;
 
 function ContractAuth(
+  contractId,
   pk,
   functionName,
   nonce = "0",
@@ -11,8 +12,9 @@ function ContractAuth(
 ) {
   return new SorobanClient.xdr.ContractAuth({
     addressWithNonce: AddressWithNonce(pk, nonce),
-    rootInvocation: AuthorizedInvocation(functionName, args, subInvocations),
+    rootInvocation: AuthorizedInvocation(contractId, functionName, args, subInvocations),
     signatureArgs: signatureArgs,
+    signatureExpirationLedger: "0",
   });
 }
 
@@ -27,12 +29,12 @@ function AddressWithNonce(pk, nonce = "0") {
   });
 }
 
-function AuthorizedInvocation(functionName, args = [], subInvocations = []) {
+function AuthorizedInvocation(contractId, functionName, args = [], subInvocations = []) {
   return new SorobanClient.xdr.AuthorizedInvocation({
-    contractId: Buffer.alloc(32),
+    contractId: contractId,
     functionName: Buffer.from(functionName),
-    args: [],
-    subInvocations: [],
+    args: args,
+    subInvocations: subInvocations,
   });
 }
 

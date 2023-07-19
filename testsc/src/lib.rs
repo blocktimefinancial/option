@@ -12,6 +12,10 @@ impl Testsc {
         vec![&env, HELLO, to]
     }
 
+    pub fn hello2(env: Env, to: Symbol) -> Vec<Symbol> {
+        const HELLO : Symbol = symbol_short!("Hellooo");
+        vec![&env, HELLO, to]
+    }
     // Now we start adding some more complex functions, one parameter type at a time
     pub fn int_128test(env: Env, i: i128) -> i128 {
         i
