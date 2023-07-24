@@ -1,6 +1,6 @@
 #![no_std]
 
-use soroban_sdk::{contractimpl, contract, vec, symbol_short, Env, Symbol, Vec, Address, Bytes};
+use soroban_sdk::{contract, contractimpl, symbol_short, vec, Address, Bytes, Env, Symbol, Vec};
 #[contract]
 pub struct Testsc;
 
@@ -8,12 +8,12 @@ pub struct Testsc;
 impl Testsc {
     // This is a simple function that returns a vector of symbols
     pub fn hello(env: Env, to: Symbol) -> Vec<Symbol> {
-        const HELLO : Symbol = symbol_short!("Hello");
+        const HELLO: Symbol = symbol_short!("Hello");
         vec![&env, HELLO, to]
     }
 
     pub fn hello2(env: Env, to: Symbol) -> Vec<Symbol> {
-        const HELLO : Symbol = symbol_short!("Hellooo");
+        const HELLO: Symbol = symbol_short!("Hellooo");
         vec![&env, HELLO, to]
     }
     // Now we start adding some more complex functions, one parameter type at a time
@@ -65,11 +65,11 @@ impl Testsc {
         a.require_auth();
         a
     }
-    
-    pub fn dbl_sign_test(env: Env, a: Address, b: Address) -> Address {
+
+    pub fn dbl_sign_test(env: Env, a: Address, b: Address) -> (Address, Address) {
         a.require_auth();
         b.require_auth();
-        a
+        (a, b)
     }
 
     pub fn test_all(
@@ -81,15 +81,7 @@ impl Testsc {
         padr: Address,
         pbytes: Bytes,
         pvec: Vec<i128>,
-    ) -> (
-        u32,
-        u64,
-        u128,
-        Symbol,
-        Address,
-        Bytes,
-        Vec<i128>,
-    ) {
+    ) -> (u32, u64, u128, Symbol, Address, Bytes, Vec<i128>) {
         (pu32, pu64, pu128, ps, padr, pbytes, pvec)
     }
 }
