@@ -83,18 +83,31 @@ async function main() {
     .setTimeout(SorobanClient.TimeoutInfinite)
     .build();
 
-  console.log(`Preparing transaction, tx`);
-  tx = await server.prepareTransaction(tx, SorobanClient.Networks.FUTURENET);
-  const nonce = tx.operations[0].auth[1].credentials().value().nonce();
-  const rootInvocation = tx.operations[0].auth[1].rootInvocation();
-  tx.operations[0].auth[1]._attributes.credentials._value._attributes.signatureArgs =
-    signArgs(
-      keyPair2,
-      SorobanClient.Networks.FUTURENET,
-      rootInvocation,
-      currentLedger + 1000,
-      nonce.toString()
-    );
+  let simTx = await server.simulateTransaction(tx);
+  
+  return;
+
+  let invocation = simTx.operations[0].auth[1].rootInvocation();
+  let authInvocation = SorobanClient.authorizeInvocation(
+    keyPair2,
+    SorobanClient.Networks.FUTURENET,
+    invocation,
+    currentLedger + 1000
+  );
+
+  // console.log(`Preparing transaction, tx`);
+  // tx = await server.prepareTransaction(tx, SorobanClient.Networks.FUTURENET);
+  // const nonce = tx.operations[0].auth[1].credentials().value().nonce();
+  // const rootInvocation = tx.operations[0].auth[1].rootInvocation();
+  // tx.operations[0].auth[1]._attributes.credentials._value._attributes.signatureArgs =
+  //   signArgs(
+  //     keyPair2,
+  //     SorobanClient.Networks.FUTURENET,
+  //     rootInvocation,
+  //     currentLedger + 1000,
+  //     nonce.toString()
+  //   );
+
   console.log(`Signing transaction with source keyPair`);
   tx.sign(keyPair);
 

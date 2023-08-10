@@ -18,6 +18,9 @@ const keyPair2 = SorobanClient.Keypair.fromSecret(
   "SBQK63DKAEZAQJPM66RX4HM5OLWSE2YDCGIKNHS2MGMPOLHESLN6ZQH6"
 );
 
+console.log(`keyPair2: ${keyPair2.publicKey()}`);
+
+
 function hashPreImage(
   networkPassphrase, //: string,
   invocation, //: SorobanClient.xdr.SorobanAuthorizedInvocation,
@@ -252,7 +255,7 @@ async function main() {
   }, 2000);
 }
 
-main();
+//main();
 
 async function getTxStatus(hash) {
   const server = new SorobanClient.Server(
