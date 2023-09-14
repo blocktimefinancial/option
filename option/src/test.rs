@@ -6,7 +6,7 @@ use super::{OptionContract, OptionContractClient};
 
 use soroban_sdk::{testutils::Address as _, testutils::BytesN as _, Address, BytesN, Env};
 
-#![cfg(test)]
+#[cfg(test)]
 
 extern crate std;
 

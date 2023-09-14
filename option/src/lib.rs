@@ -25,7 +25,10 @@
 #![no_std]
 #![allow(dead_code)]
 
-use soroban_sdk::{contractimpl, contracttype, token, Address, Env, Symbol, Vec};
+#[contract]
+struct OptionContract;
+
+use soroban_sdk::{contract, contractimpl, contracttype, token, Address, Env, Symbol, Vec};
 
 mod oracle {
     soroban_sdk::contractimport!(
@@ -125,8 +128,6 @@ pub struct OptionDef {
     pub decimals: u32,
 }
 
-pub struct OptionContract;
-
 // The 'timelock' part: check that provided timestamp is before/after
 // the current ledger timestamp.
 fn check_time_bound(env: &Env, time_bound: &TimeBound) -> bool {
@@ -149,7 +150,7 @@ fn check_time_bound(env: &Env, time_bound: &TimeBound) -> bool {
 #[contractimpl]
 impl OptionContract {
     pub fn init(env: Env) {
-        env.storage().set(&DataKey::Init, &true);
+        env.storage().instance().set(&DataKey::Init, &true);
     }
 
     pub fn list(
@@ -203,21 +204,21 @@ impl OptionContract {
         // }
 
         // // Set the option details
-        env.storage().set(&DataKey::Init, &true);
-        env.storage().set(&DataKey::OptionType, &opt_type);
-        env.storage().set(&DataKey::Strike, &strike);
-        env.storage().set(&DataKey::Expiration, &e);
-        env.storage().set(&DataKey::Oracle, &oracle);
-        env.storage().set(&DataKey::Token, &token);
-        env.storage().set(&DataKey::SDep, &0);
-        env.storage().set(&DataKey::BDep, &0);
-        env.storage().set(&DataKey::Balance, &0);
-        env.storage().set(&DataKey::MktPrice, &0);
-        env.storage().set(&DataKey::OracleTs, &0);
-        env.storage().set(&DataKey::OracleFlags, &0);
-        env.storage().set(&DataKey::TradeId, &0);
-        env.storage().set(&DataKey::Admin, &admin);
-        env.storage().set(&DataKey::Decimals, &decimals);
+        env.storage().instance().set(&DataKey::Init, &true);
+        env.storage().instance().set(&DataKey::OptionType, &opt_type);
+        env.storage().instance().set(&DataKey::Strike, &strike);
+        env.storage().instance().set(&DataKey::Expiration, &e);
+        env.storage().instance().set(&DataKey::Oracle, &oracle);
+        env.storage().instance().set(&DataKey::Token, &token);
+        env.storage().instance().set(&DataKey::SDep, &0);
+        env.storage().instance().set(&DataKey::BDep, &0);
+        env.storage().instance().set(&DataKey::Balance, &0);
+        env.storage().instance().set(&DataKey::MktPrice, &0);
+        env.storage().instance().set(&DataKey::OracleTs, &0);
+        env.storage().instance().set(&DataKey::OracleFlags, &0);
+        env.storage().instance().set(&DataKey::TradeId, &0);
+        env.storage().instance().set(&DataKey::Admin, &admin);
+        env.storage().instance().set(&DataKey::Decimals, &decimals);
     }
 
     // Return the option details
@@ -244,14 +245,14 @@ impl OptionContract {
         }
 
         // Get the option details
-        let strike: i128 = env.storage().get_unchecked(&DataKey::Strike).unwrap();
-        let exp: TimeBound = env.storage().get_unchecked(&DataKey::Expiration).unwrap();
-        let trd_id: u64 = env.storage().get_unchecked(&DataKey::TradeId).unwrap();
+        let strike: i128 = env.storage().instance().get(&DataKey::Strike).unwrap();
+        let exp: TimeBound = env.storage().instance().get(&DataKey::Expiration).unwrap();
+        let trd_id: u64 = env.storage().instance().get(&DataKey::TradeId).unwrap();
 
-        let mut seller_deposit: i128 = env.storage().get_unchecked(&DataKey::SDep).unwrap();
-        let mut buyer_deposit: i128 = env.storage().get_unchecked(&DataKey::BDep).unwrap();
+        let mut seller_deposit: i128 = env.storage().instance().get(&DataKey::SDep).unwrap();
+        let mut buyer_deposit: i128 = env.storage().instance().get(&DataKey::BDep).unwrap();
 
-        let opt_decimals: u32 = env.storage().get_unchecked(&DataKey::Decimals).unwrap();
+        let opt_decimals: u32 = env.storage().instance().get(&DataKey::Decimals).unwrap();
 
         // TODO: convert if necessary
         if decimals != opt_decimals {
@@ -279,9 +280,9 @@ impl OptionContract {
                 &seller_deposit,
             );
             // Update the trade variables
-            env.storage().set(&DataKey::SDep, &seller_deposit);
-            env.storage().set(&DataKey::TradeId, &trade_id);
-            env.storage().set(&DataKey::SAdr, &counter_party);
+            env.storage().instance().set(&DataKey::SDep, &seller_deposit);
+            env.storage().instance().set(&DataKey::TradeId, &trade_id);
+            env.storage().instance().set(&DataKey::SAdr, &counter_party);
         } else if side == SIDE_BUY {
             if trade_id != 0 && trade_id != trd_id {
                 panic!("trade already exists or invalid trade id");
@@ -299,9 +300,9 @@ impl OptionContract {
                 &buyer_deposit,
             );
             // Update the trade variables
-            env.storage().set(&DataKey::BDep, &buyer_deposit);
-            env.storage().set(&DataKey::TradeId, &trade_id);
-            env.storage().set(&DataKey::BAdr, &counter_party);
+            env.storage().instance().set(&DataKey::BDep, &buyer_deposit);
+            env.storage().instance().set(&DataKey::TradeId, &trade_id);
+            env.storage().instance().set(&DataKey::BAdr, &counter_party);
         } else {
             panic!("invalid side");
         }
@@ -316,31 +317,31 @@ impl OptionContract {
         if !is_initialized(&env) {
             panic!("contract not initialized");
         }
-        let oracle_contract_id: Address = env.storage().get_unchecked(&DataKey::Oracle).unwrap();
+        let oracle_contract_id: Address = env.storage().instance().get(&DataKey::Oracle).unwrap();
 
-        // Get without importing the oracle contract
-        let mut oracle_data: Vec<i128> = env.invoke_contract(
-            &oracle_contract_id,
-            &Symbol::short("retrieve"),
-            Vec::new(&env)
-        );
+        // // Get without importing the oracle contract
+        // let mut oracle_data: Vec<i128> = env.invoke_contract(
+        //     &oracle_contract_id,
+        //     &symbol_short!("retrieve"),
+        //     Vec::new(&env)
+        // );
 
         // Get with importing the oracle contract wasm
         let client = oracle::Client::new(&env, &oracle_contract_id);
-        oracle_data = client.retrieve();
+        let oracle_data: Vec<i128> = client.retrieve();
 
         // Store the data
 
-        env.storage().set(
+        env.storage().instance().set(
             &DataKey::OracleSymbol,
-            &oracle_data.get(0).unwrap().unwrap(),
+            &oracle_data.get(0).unwrap(),
         );
-        env.storage()
-            .set(&DataKey::MktPrice, &oracle_data.get(1).unwrap().unwrap());
-        env.storage()
-            .set(&DataKey::OracleTs, &oracle_data.get(2).unwrap().unwrap());
-        env.storage()
-            .set(&DataKey::OracleFlags, &oracle_data.get(3).unwrap().unwrap());
+        env.storage().instance()
+            .set(&DataKey::MktPrice, &oracle_data.get(1).unwrap());
+        env.storage().instance()
+            .set(&DataKey::OracleTs, &oracle_data.get(2).unwrap());
+        env.storage().instance()
+            .set(&DataKey::OracleFlags, &oracle_data.get(3).unwrap());
         oracle_data
     }
 
@@ -356,10 +357,10 @@ impl OptionContract {
         let oracle_data: Vec<i128> = Self::upd_px(env.clone());
 
         // Get the option details and the trade details
-        let strike: i128 = env.storage().get_unchecked(&DataKey::Strike).unwrap();
-        let trade_price: i128 = env.storage().get_unchecked(&DataKey::TradePx).unwrap();
-        let trade_qty: i128 = env.storage().get_unchecked(&DataKey::TradeQty).unwrap();
-        let market_price: i128 = oracle_data.get(1).unwrap().unwrap();
+        let strike: i128 = env.storage().instance().get(&DataKey::Strike).unwrap();
+        let trade_price: i128 = env.storage().instance().get(&DataKey::TradePx).unwrap();
+        let trade_qty: i128 = env.storage().instance().get(&DataKey::TradeQty).unwrap();
+        let market_price: i128 = oracle_data.get(1).unwrap();
 
         // These are the original obligations of the buyer/seller.
         let buyer_obligation: i128 = trade_qty * (strike - trade_price);
@@ -384,7 +385,7 @@ impl OptionContract {
     // Can be called by the buyer or seller to claim the results of the trade
     // if the expiration is passed.
     pub fn settle(env: Env, counter_party: Address) {
-        let exp: TimeBound = env.storage().get_unchecked(&DataKey::Expiration).unwrap();
+        let exp: TimeBound = env.storage().instance().get(&DataKey::Expiration).unwrap();
 
         if !check_time_bound(&env, &exp) {
             panic!("time predicate is not fulfilled");
@@ -393,16 +394,16 @@ impl OptionContract {
         // Only the buyer or the seller can call this function.
         counter_party.require_auth();
 
-        let strike: i128 = env.storage().get_unchecked(&DataKey::Strike).unwrap();
-        //let trade_price: i128 = env.storage().get_unchecked(&DataKey::TradePx).unwrap();
-        let trade_qty: i128 = env.storage().get_unchecked(&DataKey::TradeQty).unwrap();
-        let market_price: i128 = env.storage().get_unchecked(&DataKey::MktPrice).unwrap();
-        let token: Address = env.storage().get_unchecked(&DataKey::Token).unwrap();
-        let buyer_adr: Address = env.storage().get_unchecked(&DataKey::BAdr).unwrap();
-        let seller_adr: Address = env.storage().get_unchecked(&DataKey::SAdr).unwrap();
-        let trade_px: i128 = env.storage().get_unchecked(&DataKey::TradePx).unwrap();
-        let buyer_deposit: i128 = env.storage().get_unchecked(&DataKey::BDep).unwrap();
-        let seller_deposit: i128 = env.storage().get_unchecked(&DataKey::SDep).unwrap();
+        let strike: i128 = env.storage().instance().get(&DataKey::Strike).unwrap();
+        //let trade_price: i128 = env.storage().instance().get(&DataKey::TradePx).unwrap();
+        let trade_qty: i128 = env.storage().instance().get(&DataKey::TradeQty).unwrap();
+        let market_price: i128 = env.storage().instance().get(&DataKey::MktPrice).unwrap();
+        let token: Address = env.storage().instance().get(&DataKey::Token).unwrap();
+        let buyer_adr: Address = env.storage().instance().get(&DataKey::BAdr).unwrap();
+        let seller_adr: Address = env.storage().instance().get(&DataKey::SAdr).unwrap();
+        let trade_px: i128 = env.storage().instance().get(&DataKey::TradePx).unwrap();
+        let buyer_deposit: i128 = env.storage().instance().get(&DataKey::BDep).unwrap();
+        let seller_deposit: i128 = env.storage().instance().get(&DataKey::SDep).unwrap();
 
         // Only the buyer or the seller can call this function.
         if counter_party != buyer_adr && counter_party != seller_adr {
@@ -411,7 +412,7 @@ impl OptionContract {
 
         // Check the market price flags to see if the oracle is valid and we
         // have a settlement price.
-        let oracle_flags: i128 = env.storage().get_unchecked(&DataKey::OracleFlags).unwrap();
+        let oracle_flags: i128 = env.storage().instance().get(&DataKey::OracleFlags).unwrap();
         if oracle_flags != 1 {
             panic!("oracle flags not valid, no settlement price update");
         }
@@ -455,7 +456,7 @@ impl OptionContract {
 }
 
 fn is_initialized(env: &Env) -> bool {
-    env.storage().has(&DataKey::Init)
+    env.storage().instance().has(&DataKey::Init)
 }
 
 // Limited gain / loss option
