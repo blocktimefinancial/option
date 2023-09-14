@@ -27,17 +27,23 @@ function hashPreImage(
   ledgerValidityCount, //: number,
   nonce
 ) {
-  const networkId = SorobanClient.hash(Buffer.from(networkPassphrase));
+  let networkId = SorobanClient.hash(Buffer.from(networkPassphrase));
+  networkId = Buffer.from(networkId).subarray(0,32);
+
   const n = SorobanClient.xdr.Int64.fromString(nonce); // don't actually do this lmao
 
-  const envelope = new SorobanClient.xdr.HashIdPreimageSorobanAuthorization({
+  const hashIdPreimageAuth = new SorobanClient.xdr.HashIdPreimageSorobanAuthorization({
     networkId,
     invocation,
     nonce: n,
     signatureExpirationLedger: ledgerValidityCount,
   });
 
-  const env = envelope.toXDR("raw");
+  const preimage = xdr.HashIdPreimage.envelopeTypeSorobanAuthorization(
+    hashIdPreimageAuth,
+  );
+
+  const env = preimage.toXDR("raw");
   return SorobanClient.hash(env);
 }
 
