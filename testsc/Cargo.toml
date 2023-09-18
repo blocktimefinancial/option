@@ -1,6 +1,6 @@
 [package]
-name = "soroban-oracle"
-version = "0.0.0"
+name = "soroban-testsc"
+version = "0.1.0"
 authors = ["Block TIme Financial, Inc <info@blocktimefinancial.com>"]
 license = "MIT"
 edition = "2021"
@@ -30,3 +30,7 @@ debug-assertions = false
 panic = "abort"
 codegen-units = 1
 lto = true
+
+[profile.release-with-logs]
+inherits = "release"
+debug-assertions = true

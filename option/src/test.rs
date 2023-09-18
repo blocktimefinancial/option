@@ -6,6 +6,12 @@ use super::{OptionContract, OptionContractClient};
 
 use soroban_sdk::{testutils::Address as _, testutils::BytesN as _, Address, BytesN, Env};
 
+#[cfg(test)]
+
+extern crate std;
+
+use super::{OracleContract, OracleContractClient};
+
 #[test]
 fn test() {
     let env = Env::default();

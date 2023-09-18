@@ -19,102 +19,21 @@ const FIVE_MINUTES_MS = 5 * ONE_MINUTE_MS;
 // const contractId =
 //   "cd0ca2f721d91df334b79fb1e043920919ed0c6b09f930af5048a50930fb7f44";
 
-// New 0.8.0 contractId
+// New 0.8.0 contractId for Oracle contract
 // const contractId =
 //   "b7664664ed4f93e1773448d8959e9bcc1cf213564f1ff6cc832a1793635050f8";
-const contractId = "e1f77313773d8e429836c080e5470bdfb28f34f33847827601b0c540ace109bf";
+//const contractId = "e1f77313773d8e429836c080e5470bdfb28f34f33847827601b0c540ace109bf";
+const contractId = "CDQ7O4YTO46Y4QUYG3AIBZKHBPP3FDZU6M4EPATWAGYMKQFM4EE37UL6";
 
 const pk = "GDZ4CDLVSHQIAXRBTPHTPJ5MSCC6XO4R4IXRGRQ6VOVV2H2HFSQJHRYH";
 const secret = "SCIGOGUPFOZSEBVZBEF3BJL6SZGVSFYANQ6BZE6PTTQ7S4YXYDPY4JHL";
 
-// These conversion functions are from the soroban-example-dapp project
-// and converted from typescript to javascript.
-// Thanks Paul and Estaban!
-function bigintToBuf(bn) {
-  var hex = BigInt(bn).toString(16).replace(/^-/, "");
-  if (hex.length % 2) {
-    hex = "0" + hex;
-  }
+// Removed conversion functions as these are now part of the js-soroban-client library
 
-  var len = hex.length / 2;
-  var u8 = new Uint8Array(len);
-
-  var i = 0;
-  var j = 0;
-  while (i < len) {
-    u8[i] = parseInt(hex.slice(j, j + 2), 16);
-    i += 1;
-    j += 2;
-  }
-
-  if (bn < BigInt(0)) {
-    // Set the top bit
-    u8[0] |= 0x80;
-  }
-
-  return Buffer.from(u8);
-}
-
-function bigNumberFromBytes(signed, ...bytes) {
-  let sign = 1;
-  if (signed && bytes[0] & 0x80) {
-    // top bit is set, negative number.
-    sign = -1;
-    bytes[0] &= 0x7f;
-    console.log(bytes[0]);
-    console.log(`sign: ${sign}`);
-  }
-  let b = BigInt(0);
-  for (let byte of bytes) {
-    b <<= BigInt(8);
-    b |= BigInt(byte);
-  }
-  return new BigNumber(b.toString()).multipliedBy(sign);
-}
-
-function bigNumberToI128(value) {
-  const b = BigInt(value.toFixed(0));
-  console.log(`b: ${b}`);
-  const buf = bigintToBuf(b);
-  if (buf.length > 16) {
-    throw new Error("BigNumber overflows i128");
-  }
-
-  if (value.isNegative()) {
-    console.log("value is negative");
-    // Clear the top bit
-    buf[0] &= 0x7f;
-  }
-
-  // left-pad with zeros up to 16 bytes
-  let padded = Buffer.alloc(16);
-  buf.copy(padded, padded.length - buf.length);
-  //console.debug({ value: value.toString(), padded });
-
-  if (value.isNegative()) {
-    // Set the top bit
-    padded[0] |= 0x80;
-  }
-
-  console.log("Padded:", padded);
-  const hi = new xdr.Int64(
-    bigNumberFromBytes(false, ...padded.slice(4, 8)).toNumber(),
-    bigNumberFromBytes(false, ...padded.slice(0, 4)).toNumber()
-  );
-  console.log(padded);
-  console.log(padded.slice(12, 16));
-  console.log(padded.slice(8, 12));
-  console.log(bigNumberFromBytes(padded.slice(12,16)).toNumber());
-  const lo = new xdr.Uint64(
-    bigNumberFromBytes(false, ...padded.slice(12, 16)).toNumber(),
-    bigNumberFromBytes(false, ...padded.slice(8, 12)).toNumber()
-  );
-
-  return xdr.ScVal.scvI128(new xdr.Int128Parts({ lo, hi }));
-}
-
-function createContractTransaction(sourceAccount, contractId, method, ...args) {
+function createContractTransaction(networkPassphrase, sourceAccount, contractId, method, ...args) {
   let myArgs = args || [];
+  contractId = "e1f77313773d8e429836c080e5470bdfb28f34f33847827601b0c540ace109bf";
+  
   const contract = new SorobanClient.Contract(contractId);
 
   console.log(
@@ -124,11 +43,10 @@ function createContractTransaction(sourceAccount, contractId, method, ...args) {
       3
     )}`
   );
-  console.log(`Contract: ${util.inspect(contract, false, 3)}`);
-
+  
   return new SorobanClient.TransactionBuilder(sourceAccount, {
     fee: 100,
-    networkPassphrase: SorobanClient.Networks.FUTURENET,
+    networkPassphrase: networkPassphrase,
   })
     .addOperation(contract.call(method, ...myArgs))
     .setTimeout(SorobanClient.TimeoutInfinite)
@@ -141,12 +59,14 @@ async function invokeContract(params) {
   // Load the account
   let source = await server.getAccount(body.publicKey);
 
+  console.log(`Calling createContractTransaction`);
   // Create a transaction to call the contract
   let tx = createContractTransaction(
-    source, // Source account
-    body.contractId, // Contract ID
-    body.method, // Method name
-    ...body.params // Method parameters
+    SorobanClient.Networks.FUTURENET, // Network
+    source,           // Source account
+    body.contractId,  // Contract ID
+    body.method,      // Method name
+    ...body.params    // Method parameters
   );
 
   // Little peek at the transaction before it's simulated
@@ -290,7 +210,7 @@ function toSorobanArgs(quote) {
     `Market state: ${marketState}, flags: ${flags}, price: ${price}, timestamp: ${timestamp}`
   );
   // from the quote.  We'll just stringify the quote for now.
-  let symbolCode = bigNumberToI128(new BigNumber(1));
+  let symbolCode = SorobanClient.nativeToScVal(1, {type: "i128"});
   console.dir(`Symbol code: ${symbolCode}`);
 
   // We know that Soroban VM doesn't support floating point numbers, so we'll
@@ -298,18 +218,18 @@ function toSorobanArgs(quote) {
   // wait until js-stellar-base has better conversion support.
   // Moving to 2 decimal places for now.
   // convert numbers to i128 values with 7 decimal places of precision.
-  price = bigNumberToI128(new BigNumber(Math.floor(price * 100)));
+  price = SorobanClient.nativeToScVal(Math.floor(price * 100), {type: "i128"});
   console.dir(`Price: ${price}`);
   // Dates are also not supported, so we'll convert them to timestamps in
   // the same format as Soroban VM timestamps.
-  const ts = new BigNumber(timestamp);
+  const ts = timestamp;
   console.log(`Timestamp: ${ts}`);
 
-  timestamp = bigNumberToI128(ts);
+  timestamp =  SorobanClient.nativeToScVal(ts, {type: "i128"});
   console.dir(`Timestamp: ${timestamp}`);
 
   //Flags are a bit field, so we'll just set the third bit
-  flags = bigNumberToI128(new BigNumber(flags));
+  flags = SorobanClient.nativeToScVal(flags, {type: "i128"});
   console.dir(`Flags: ${flags}`);
 
   return [symbolCode, price, timestamp, flags];
@@ -320,17 +240,16 @@ function toSorobanArgs(quote) {
 async function updateSmartContract(scDetailsObj, quote) {
   // Create the transaction to update the smart contract
 
-  const account = await server.getAccount(pk);
-  console.log(`Account: ${account._accountId} SeqNum: ${account.sequence}`);
-
+  let minAccount = await server.getAccount(pk);
+  console.log(`Account: ${minAccount._accountId} SeqNum: ${minAccount.sequence}`);
+  let account = new SorobanClient.Account(minAccount._accountId, minAccount.sequence.toString());
   // We don't know what the fees will be, so we'll just use a constant fee
   const fee = 100;
 
   console.log(`UpdatingSmartContract ${contractId} using ${pk}`);
   const sorobanArgs = toSorobanArgs(quote);
-  console.log(`Converted quote: ${util.inspect(sorobanArgs, false, 5)}`);
-
-  return await invokeContract({
+  //console.log(`Converted quote: ${util.inspect(sorobanArgs, false, 5)}`);
+  let params = {
     body: {
       publicKey: pk,
       secret: secret,
@@ -338,7 +257,10 @@ async function updateSmartContract(scDetailsObj, quote) {
       contractId: contractId,
       method: "update",
     },
-  });
+  };
+
+  console.log(`Params: ${util.inspect(params, false, 5)}`);
+  return await invokeContract(params);
 }
 
 // Update the smart contract with the latest quote
