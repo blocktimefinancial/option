@@ -21,7 +21,7 @@
 //! deposited collateral within a certain time period.
 //!
 //! ** trade function is broken, need to fix **
-//! 
+//!
 #![no_std]
 #![allow(dead_code)]
 
@@ -77,6 +77,8 @@ pub enum DataKey {
     OracleSymbol, // Oracle Symbol, the underlying asset symbol in some normalized standard format *See SYMBOLOGY.md for details
     TradeId,      // Trade ID
     Decimals,     // Number of decimals for the price and strike
+    KillSwitch, // Kill switch, 0 = off, 1 = on for read/write operations, 2 = on for all operations
+    Version,    // Version of the contract
 }
 
 #[derive(Clone)]
@@ -98,7 +100,7 @@ pub struct TimeBound {
 #[contracttype]
 pub struct Trade {
     pub price: i128,     // Price of the trade, in terms of collateral token
-    pub decimals: u32,    // Number of decimals for the price
+    pub decimals: u32,   // Number of decimals for the price
     pub qty: i128,       // Quantity of the trade
     pub buyer: Address,  // Buyer address
     pub seller: Address, // Seller address
@@ -150,30 +152,62 @@ fn check_time_bound(env: &Env, time_bound: &TimeBound) -> bool {
 #[contractimpl]
 impl OptionContract {
     pub fn init(env: Env) {
-        env.storage().instance().set(&DataKey::Init, &true);
+        env.storage().instance().set(&DataKey::Init, &true); // Contract is initialized
+        env.storage().instance().set(&DataKey::KillSwitch, &0); // Kill switch is off
+    }
+
+    pub fn killswitch(env: Env, killswitch: u32) -> u32 {
+        if !is_initialized(&env) {
+            panic!("contract is not initialized");
+        }
+        // The killswitch can only be set by the admin
+        let current_admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
+        if current_admin != env.caller() {
+            panic!("caller is not the admin");
+        }
+        // The killswitch can only be set to 0 or 1 or 2
+        if killswitch > 2 {
+            panic!("killswitch can only be set to 0 or 1 or 2");
+        }
+        // Set the killswitch
+        env.storage()
+            .instance()
+            .set(&DataKey::KillSwitch, &killswitch);
+        // Return the killswitch
+        killswitch
     }
 
     pub fn list(
         env: Env,
-        opt_type: u32,      // option type, only put option is supported at this time
-        strike: i128,       // strike price
-        decimals: u32,       // number of decimals for the strike price
-        exp: u64,           // expiration date and time
-        oracle: Address,    // oracle contract address
-        token: Address,     // token address (e.g. USDC)
-        admin: Address,     // admin address
+        opt_type: u32,   // option type, only put option is supported at this time
+        strike: i128,    // strike price
+        decimals: u32,   // number of decimals for the strike price
+        exp: u64,        // expiration date and time
+        oracle: Address, // oracle contract address
+        token: Address,  // token address (e.g. USDC)
+        admin: Address,  // admin address
     ) {
         if !is_initialized(&env) {
             panic!("contract is not initialized");
         }
 
-        // TODO: Should we let anyone list an option in the future? 
+        if (get_killswitch(&env) > 0) {
+            panic!("killswitch activated");
+        }
+        // TODO: Should we let anyone list an option in the future?
         // For now, only the admin can list an option because we'll
         // assume the admin is the authority for KYC/AML and other
         // regulatory requirements.  The admin should know the buyer
         // and seller and their addresses.
 
         // Check that the caller is the admin
+        // Get the current admin
+        let current_admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
+        if current_admin != admin {
+            panic!("caller is not the admin");
+        }
+
+        // Make sure the caller is the admin
         admin.require_auth();
 
         let e: TimeBound = TimeBound {
@@ -181,15 +215,15 @@ impl OptionContract {
             timestamp: exp,
         };
         // Set the option details
-        if opt_type != (PUT | EUROPEAN)  {
+        if opt_type != (PUT | EUROPEAN) {
             panic!("only put option is supported at this time");
         }
-        
+
         // Do some checking on the input parameters
-        if strike <= 0  {
+        if strike <= 0 {
             panic!("strike price must be greater than 0");
         }
-        if exp <= env.ledger().timestamp()  {
+        if exp <= env.ledger().timestamp() {
             panic!("expiration time must be in the future");
         }
 
@@ -205,7 +239,9 @@ impl OptionContract {
 
         // // Set the option details
         env.storage().instance().set(&DataKey::Init, &true);
-        env.storage().instance().set(&DataKey::OptionType, &opt_type);
+        env.storage()
+            .instance()
+            .set(&DataKey::OptionType, &opt_type);
         env.storage().instance().set(&DataKey::Strike, &strike);
         env.storage().instance().set(&DataKey::Expiration, &e);
         env.storage().instance().set(&DataKey::Oracle, &oracle);
@@ -219,10 +255,73 @@ impl OptionContract {
         env.storage().instance().set(&DataKey::TradeId, &0);
         env.storage().instance().set(&DataKey::Admin, &admin);
         env.storage().instance().set(&DataKey::Decimals, &decimals);
+
+        // Return 0 if successful
+        0
     }
 
     // Return the option details
-    pub fn specs() {}
+    pub fn specs(
+        env: Env,
+    ) -> (
+        bool,
+        u32,
+        i128,
+        TimeBound,
+        Address,
+        Address,
+        i128,
+        i128,
+        i128,
+        i128,
+        i128,
+        i128,
+        u64,
+        Address,
+        u32,
+    ) {
+        if !is_initialized(&env) {
+            panic!("contract is not initialized");
+        }
+        // If killswitch is greater than 1, then we can't read the contract
+        if (get_killswitch(&env) > 1) {
+            panic!("killswitch for read/write/read only activated");
+        }
+        // // Get the option details
+        let init = env.storage().instance().get(&DataKey::Init).unwrap();
+        let opt_type = env.storage().instance().get(&DataKey::OptionType).unwrap();
+        let strike = env.storage().instance().get(&DataKey::Strike).unwrap();
+        let exp = env.storage().instance().get(&DataKey::Expiration).unwrap();
+        let oracle = env.storage().instance().get(&DataKey::Oracle).unwrap();
+        let token = env.storage().instance().get(&DataKey::Token).unwrap();
+        let sdep = env.storage().instance().get(&DataKey::SDep).unwrap();
+        let bdep = env.storage().instance().get(&DataKey::BDep).unwrap();
+        let balance = env.storage().instance().get(&DataKey::Balance).unwrap();
+        let mkt_px = env.storage().instance().get(&DataKey::MktPrice).unwrap();
+        let oracle_ts = env.storage().instance().get(&DataKey::OracleTs).unwrap();
+        let oracle_flags = env.storage().instance().get(&DataKey::OracleFlags).unwrap();
+        let trd_id = env.storage().instance().get(&DataKey::TradeId).unwrap();
+        let admin = env.storage().instance().get(&DataKey::Admin).unwrap();
+        let decimals = env.storage().instance().get(&DataKey::Decimals).unwrap();
+
+        (
+            init,
+            opt_type,
+            strike,
+            exp,
+            oracle,
+            token,
+            sdep,
+            bdep,
+            balance,
+            mkt_px,
+            oracle_ts,
+            oracle_flags,
+            trd_id,
+            admin,
+            decimals,
+        )
+    }
     // The seller deposits USDC to the contract in the amount of
     // strike price - option premium * number of options.
     // Example: Strike price is 100, premium is 10, number of options is 10.
@@ -238,12 +337,17 @@ impl OptionContract {
         qty: i128,
         trade_id: u64,
     ) {
-        counter_party.require_auth();
-
+        
         if !is_initialized(&env) {
             panic!("contract not initialized");
         }
-
+        
+        // If killswitch is greater than 0, then we can't write to the contract
+        if (get_killswitch(&env) > 0) {
+            panic!("killswitch for read/write activated");
+        }
+        // Only the buyer or the seller can call this function.
+        counter_party.require_auth();
         // Get the option details
         let strike: i128 = env.storage().instance().get(&DataKey::Strike).unwrap();
         let exp: TimeBound = env.storage().instance().get(&DataKey::Expiration).unwrap();
@@ -280,7 +384,9 @@ impl OptionContract {
                 &seller_deposit,
             );
             // Update the trade variables
-            env.storage().instance().set(&DataKey::SDep, &seller_deposit);
+            env.storage()
+                .instance()
+                .set(&DataKey::SDep, &seller_deposit);
             env.storage().instance().set(&DataKey::TradeId, &trade_id);
             env.storage().instance().set(&DataKey::SAdr, &counter_party);
         } else if side == SIDE_BUY {
@@ -332,15 +438,17 @@ impl OptionContract {
 
         // Store the data
 
-        env.storage().instance().set(
-            &DataKey::OracleSymbol,
-            &oracle_data.get(0).unwrap(),
-        );
-        env.storage().instance()
+        env.storage()
+            .instance()
+            .set(&DataKey::OracleSymbol, &oracle_data.get(0).unwrap());
+        env.storage()
+            .instance()
             .set(&DataKey::MktPrice, &oracle_data.get(1).unwrap());
-        env.storage().instance()
+        env.storage()
+            .instance()
             .set(&DataKey::OracleTs, &oracle_data.get(2).unwrap());
-        env.storage().instance()
+        env.storage()
+            .instance()
             .set(&DataKey::OracleFlags, &oracle_data.get(3).unwrap());
         oracle_data
     }
@@ -352,6 +460,17 @@ impl OptionContract {
     pub fn mtm(env: Env) -> Vec<i128> {
         if !is_initialized(&env) {
             panic!("contract not initialized");
+        }
+        // If killswitch is greater than 1, then we can't read the contract
+        if (get_killswitch(&env) > 1) {
+            panic!("killswitch for read/write/read only activated");
+        }
+        // Only the admin, buyer or seller can call this function.
+        let current_admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
+        let buyer_adr: Address = env.storage().instance().get(&DataKey::BAdr).unwrap();
+        let seller_adr: Address = env.storage().instance().get(&DataKey::SAdr).unwrap();
+        if current_admin != env.caller() && buyer_adr != env.caller() && seller_adr != env.caller() {
+            panic!("caller is not the admin, buyer or seller");
         }
         // Update the market price from the oracle.
         let oracle_data: Vec<i128> = Self::upd_px(env.clone());
@@ -385,14 +504,26 @@ impl OptionContract {
     // Can be called by the buyer or seller to claim the results of the trade
     // if the expiration is passed.
     pub fn settle(env: Env, counter_party: Address) {
+        if !is_initialized(&env) {
+            panic!("contract not initialized");
+        }
+        // If killswitch is greater than 0, then we can't read/write the contract
+        if (get_killswitch(&env) > 0) {
+            panic!("killswitch for read/write activated");
+        }
+        // Only the admin, buyer, or seller can settle the contract.
+        let current_admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
+        let buyer_adr: Address = env.storage().instance().get(&DataKey::BAdr).unwrap();
+        let seller_adr: Address = env.storage().instance().get(&DataKey::SAdr).unwrap();
+        if current_admin != env.caller() && buyer_adr != env.caller() && seller_adr != env.caller() {
+            panic!("caller is not the admin, buyer or seller");
+        }
+        // Get the option details
         let exp: TimeBound = env.storage().instance().get(&DataKey::Expiration).unwrap();
 
         if !check_time_bound(&env, &exp) {
             panic!("time predicate is not fulfilled");
         }
-
-        // Only the buyer or the seller can call this function.
-        counter_party.require_auth();
 
         let strike: i128 = env.storage().instance().get(&DataKey::Strike).unwrap();
         //let trade_price: i128 = env.storage().instance().get(&DataKey::TradePx).unwrap();
@@ -404,11 +535,6 @@ impl OptionContract {
         let trade_px: i128 = env.storage().instance().get(&DataKey::TradePx).unwrap();
         let buyer_deposit: i128 = env.storage().instance().get(&DataKey::BDep).unwrap();
         let seller_deposit: i128 = env.storage().instance().get(&DataKey::SDep).unwrap();
-
-        // Only the buyer or the seller can call this function.
-        if counter_party != buyer_adr && counter_party != seller_adr {
-            panic!("invalid counter party");
-        }
 
         // Check the market price flags to see if the oracle is valid and we
         // have a settlement price.
@@ -457,6 +583,10 @@ impl OptionContract {
 
 fn is_initialized(env: &Env) -> bool {
     env.storage().instance().has(&DataKey::Init)
+}
+
+fn get_killswitch(env: &Env) -> u32 {
+    env.storage().instance().get(&DataKey::KillSwitch).unwrap()
 }
 
 // Limited gain / loss option
