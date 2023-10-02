@@ -105,5 +105,6 @@ Block Time Financial, Inc. is a blockchain infrastructure company.  We provide b
 a regulatory compliant manner.  We run parallel to your current systems, allowing you to experiment and explore the future of finance.
 info@blocktimefinancial.com
 (262) 368-1150
+
 #### Disclaimer:
-Please see the DISCLAIMER.md file in this repo
+Please see the [Disclaimer](./DISCLAIMER.md) file in this repo
