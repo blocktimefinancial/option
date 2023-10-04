@@ -63,9 +63,17 @@ As a StrKey: CDQ7O4YTO46Y4QUYG3AIBZKHBPP3FDZU6M4EPATWAGYMKQFM4EE37UL6
 #### What it does
 The Oracle smart contract acts as the source of truth for pricing.  Other smart contracts that trust
 this oracle can query it for prices.  Its "truthy ness" is only based on the inputs and the trustworthiness
-of the implementor. 
+of the implementor. This Oracle is a deployment of the [Reflector-Contract](https://github.com/reflector-network/reflector-contract/tree/master)
 
 #### Soroban-CLI
+Cmd to deploy the Reflector-Contract oracle
+
+Cmd to initialize the Reflector-Contract oracle
+
+Cmd to set the base asset
+
+Cmd to set the price of an asset
+
 Cmd to retrieve a price
 ```sh
 soroban contract invoke --id e1f77313773d8e429836c080e5470bdfb28f34f33847827601b0c540ace109bf \
@@ -105,5 +113,6 @@ Block Time Financial, Inc. is a blockchain infrastructure company.  We provide b
 a regulatory compliant manner.  We run parallel to your current systems, allowing you to experiment and explore the future of finance.
 info@blocktimefinancial.com
 (262) 368-1150
+
 #### Disclaimer:
-Please see the DISCLAIMER.md file in this repo
+Please see the [Disclaimer](./DISCLAIMER.md) file in this repo

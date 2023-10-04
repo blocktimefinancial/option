@@ -191,7 +191,7 @@ impl OptionContract {
             panic!("contract is not initialized");
         }
 
-        if (get_killswitch(&env) > 0) {
+        if get_killswitch(&env) > 0 {
             panic!("killswitch activated");
         }
         // TODO: Should we let anyone list an option in the future?
@@ -284,7 +284,7 @@ impl OptionContract {
             panic!("contract is not initialized");
         }
         // If killswitch is greater than 1, then we can't read the contract
-        if (get_killswitch(&env) > 1) {
+        if get_killswitch(&env) > 1 {
             panic!("killswitch for read/write/read only activated");
         }
         // // Get the option details
@@ -343,7 +343,7 @@ impl OptionContract {
         }
         
         // If killswitch is greater than 0, then we can't write to the contract
-        if (get_killswitch(&env) > 0) {
+        if get_killswitch(&env) > 0 {
             panic!("killswitch for read/write activated");
         }
         // Only the buyer or the seller can call this function.
@@ -462,7 +462,7 @@ impl OptionContract {
             panic!("contract not initialized");
         }
         // If killswitch is greater than 1, then we can't read the contract
-        if (get_killswitch(&env) > 1) {
+        if get_killswitch(&env) > 1 {
             panic!("killswitch for read/write/read only activated");
         }
         // Only the admin, buyer or seller can call this function.
@@ -508,7 +508,7 @@ impl OptionContract {
             panic!("contract not initialized");
         }
         // If killswitch is greater than 0, then we can't read/write the contract
-        if (get_killswitch(&env) > 0) {
+        if get_killswitch(&env) > 0 {
             panic!("killswitch for read/write activated");
         }
         // Only the admin, buyer, or seller can settle the contract.
