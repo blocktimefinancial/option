@@ -56,8 +56,12 @@ soroban contract invoke --id e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23
 ```
 
 ## Oracle Smart Contract - Reflector by Stellar Expert
-ContractId: 
-Admin PublicKey: 
+Admin Key Pair:
+GDTQQPHB622LVZ5QWPJ4YDHKYKGXNBRP5H24MI22WAZQVDPG3XWLJWUO
+SD44PHYKUTTVKOYQYACCLDUPSXTQ3KTRFEKITB52J6ZLJN7LMEJPTQZD
+
+Current Contract ID:
+CBNV6JPWVI4QFRBYRJDRMB6RSNCNEMYPQAE4VI777HLYMN73ATLAMHTI
 
 #### What it does
 The Oracle smart contract acts as the source of truth for pricing.  Other smart contracts that trust
