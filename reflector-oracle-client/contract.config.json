@@ -1,0 +1,18 @@
+{
+    "id": "CAWKSIJM64CVZ6OLBSRSVSFGEOONPILQL6HGSCHHOSKEBNSYEU3Q4IJE",
+    "decimals": 7,
+    "resolution": 120000,
+    "network": "Test SDF Future Network ; October 2022",
+    "horizonUrl": "https://rpc-futurenet.stellar.org:443",
+    "adminSecret": "SD44PHYKUTTVKOYQYACCLDUPSXTQ3KTRFEKITB52J6ZLJN7LMEJPTQZD",
+    "assets": [
+        {
+            "type": 1,
+            "code": "USDC"
+        },
+        {
+            "type": 2,
+            "code": "USD"
+        }
+    ]
+}
