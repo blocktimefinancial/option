@@ -213,7 +213,7 @@ const txOptions = {
 //         const prices = Array.from({length: contractConfig.assets.length}, () => generateRandomI128())
 
 //         const timestamp = lastTimestamp += contractConfig.resolution
-//         await submitTx(client.setPrice(account, prices, timestamp, txOptions), response => {
+        // await submitTx(client.setPrice(account, prices, timestamp, txOptions), response => {
 //             expect(response).toBeDefined()
 //         })
 //     }
@@ -363,12 +363,36 @@ async function main(){
 
     await prepare()
 
-    await submitTx(client.admin(contractCaller, txOptions), response => {
-        const adminPublicKey = Client.parseAdminResult(response.resultMetaXdr)
-        //expect(admin.publicKey()).toBe(adminPublicKey)
-        console.log(`Admin: ${adminPublicKey}`)
-        return `Admin: ${adminPublicKey}`
+    // await submitTx(client.admin(contractCaller, txOptions), response => {
+    //     const adminPublicKey = Client.parseAdminResult(response.resultMetaXdr)
+    //     //expect(admin.publicKey()).toBe(adminPublicKey)
+    //     console.log(`Admin: ${adminPublicKey}`)
+    //     return `Admin: ${adminPublicKey}`
+    // })
+    // let assets = []
+    // await submitTx(client.assets(contractCaller, txOptions), response => {
+    //     assets = Client.parseAssetsResult(response.resultMetaXdr)
+    //     return `Assets: ${JSON.stringify(assets)}`
+    // })
+
+    // console.log("Assets Retrieved. Starting price set...")
+
+    for(let i = 0; i < 3; i++){
+        const prices = Array.from({length: contractConfig.assets.length}, () => generateRandomI128())
+
+        const timestamp = lastTimestamp += contractConfig.resolution
+        await submitTx(client.setPrice(contractCaller, prices, timestamp, txOptions), response => {
+        //expect(response).toBeDefined()
+        })
+    }
+    
+    console.log(`Getting last 3 prices for: ${JSON.stringify(contractConfig.assets[0])}`)
+    await submitTx(client.prices(contractCaller, contractConfig.assets[0], 3, txOptions), response =>{
+        const prices = Client.parsePricesResult(response.resultMetaXdr)
+        console.log(prices)
+        return `Prices: ${prices.map(p => priceToString(p)).join(', ')}`
     })
+    
 }
 
 main();

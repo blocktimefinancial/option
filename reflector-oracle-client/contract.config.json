@@ -7,7 +7,7 @@
     "adminSecret": "SD44PHYKUTTVKOYQYACCLDUPSXTQ3KTRFEKITB52J6ZLJN7LMEJPTQZD",
     "assets": [
         {
-            "type": 1,
+            "type": 2,
             "code": "USDC"
         },
         {

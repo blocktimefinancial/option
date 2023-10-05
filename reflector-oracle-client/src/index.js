@@ -71,12 +71,21 @@ async function buildTransaction(client, source, operation, options, network) {
   console.log(txBuilderOptions);
   console.log(source);
 
+<<<<<<< HEAD
   const transaction = new TransactionBuilder(sourceAccount, txBuilderOptions)
     .addOperation(operation)
     .setTimeout(options.timeout || 0)
     .build();
 
   return await client.server.prepareTransaction(transaction, client.network);
+=======
+    const transaction = new TransactionBuilder(sourceAccount, txBuilderOptions)
+        .addOperation(operation)
+        .setTimeout(options.timeout || 0)
+        .build()
+    console.log("Prepping tx...")
+    return await client.server.prepareTransaction(transaction, client.network)
+>>>>>>> 1f2a01a8bdf6fcae018186ecb1d7f008169e28ce
 }
 
 function getAccountId(source) {
@@ -689,6 +698,7 @@ class OracleClient {
     return parseXdrAssetResult(val);
   }
 
+<<<<<<< HEAD
   /**
    * @param {string} result - Trasanction meta XDR
    * @returns {number} - Number value
@@ -698,6 +708,32 @@ class OracleClient {
     if (val === undefined) return null;
     return Number(val.value());
   }
+=======
+    /**
+     * Builds a transaction to set prices
+     * @param {string|Account} source - Valid Stellar account ID, or Account object
+     * @param {BigInt[]} updates - Array of prices
+     * @param {number} timestamp - Timestamp in milliseconds
+     * @param {TxOptions} options - Transaction options
+     * @returns {Promise<Transaction>} Prepared transaction
+     */
+    async setPrice(source, updates, timestamp, options = {fee: 100}) {
+        console.log("Inside set price." + timestamp)
+        const scValPrices = xdr.ScVal.scvVec(updates.map(u => nativeToScVal(u, {type: 'i128'})))
+        return await buildTransaction(
+            this,
+            source,
+            this.contract.call(
+                'set_price',
+                new Address(getAccountId(source)).toScVal(),
+                scValPrices,
+                xdr.ScVal.scvU64(xdr.Uint64.fromString(timestamp.toString()))
+            ),
+            options,
+            this.network
+        )
+    }
+>>>>>>> 1f2a01a8bdf6fcae018186ecb1d7f008169e28ce
 
   /**
    * @param {string} result - Trasanction meta XDR
@@ -735,6 +771,7 @@ class OracleClient {
     return prices;
   }
 
+<<<<<<< HEAD
   /**
    * @param {string} result - Trasanction meta XDR
    * @returns {BigInt} - twap value
@@ -744,6 +781,356 @@ class OracleClient {
     if (val === undefined) return null;
     return scValToBigInt(val);
   }
+=======
+    /**
+     * Builds a transaction to get resolution
+     * @param {string|Account} source - Valid Stellar account ID, or Account object
+     * @param {TxOptions} options - Transaction options
+     * @returns {Promise<Transaction>} Prepared transaction
+     */
+    async resolution(source, options = {fee: 100}) {
+        return await buildTransaction(this, source, this.contract.call('resolution'), options, this.network)
+    }
+
+    /**
+     * Builds a transaction to get retention period
+     * @param {string|Account} source - Valid Stellar account ID, or Account object
+     * @param {TxOptions} options - Transaction options
+     * @returns {Promise<Transaction>} Prepared transaction
+     */
+    async period(source, options = {fee: 100}) {
+        return await buildTransaction(this, source, this.contract.call('period'), options, this.network)
+    }
+
+    /**
+     * Builds a transaction to get supported assets
+     * @param {string|Account} source - Valid Stellar account ID, or Account object
+     * @param {TxOptions} options - Transaction options
+     * @returns {Promise<Transaction>} Prepared transaction
+     */
+    async assets(source, options = {fee: 100}) {
+        return await buildTransaction(this, source, this.contract.call('assets'), options, this.network)
+    }
+
+    /**
+     * Builds a transaction to get last timestamp
+     * @param {string|Account} source - Valid Stellar account ID, or Account object
+     * @param {TxOptions} options - Transaction options
+     * @returns {Promise<Transaction>} Prepared transaction
+     */
+    async lastTimestamp(source, options = {fee: 100}) {
+        return await buildTransaction(this, source, this.contract.call('last_timestamp'), options, this.network)
+    }
+
+    /**
+     * Builds a transaction to get asset price at timestamp
+     * @param {string|Account} source - Valid Stellar account ID, or Account object
+     * @param {Asset} asset - Asset to get price for
+     * @param {number} timestamp - Timestamp in milliseconds
+     * @param {TxOptions} options - Transaction options
+     * @returns {Promise<Transaction>} Prepared transaction
+     */
+    async price(source, asset, timestamp, options = {fee: 100}) {
+        return await buildTransaction(
+            this,
+            source,
+            this.contract.call(
+                'price',
+                buildAssetScVal(asset),
+                xdr.ScVal.scvU64(xdr.Uint64.fromString(timestamp.toString()))
+            ),
+            options,
+            this.network
+        )
+    }
+
+    /**
+     * Builds a transaction to get cross asset price at timestamp
+     * @param {string|Account} source - Valid Stellar account ID, or Account object
+     * @param {Asset} baseAsset - Base asset
+     * @param {Asset} quoteAsset - Quote asset
+     * @param {number} timestamp - Timestamp in milliseconds
+     * @param {TxOptions} options - Transaction options
+     * @returns {Promise<Transaction>} Prepared transaction
+     */
+    async xPrice(source, baseAsset, quoteAsset, timestamp, options = {fee: 100}) {
+        return await buildTransaction(
+            this,
+            source,
+            this.contract.call(
+                'x_price',
+                buildAssetScVal(baseAsset),
+                buildAssetScVal(quoteAsset),
+                xdr.ScVal.scvU64(xdr.Uint64.fromString(timestamp.toString()))
+            ),
+            options,
+            this.network
+        )
+    }
+
+    /**
+     * Builds a transaction to get last asset price
+     * @param {string|Account} source - Valid Stellar account ID, or Account object
+     * @param {Asset} asset - Asset to get price for
+     * @param {TxOptions} options - Transaction options
+     * @returns {Promise<Transaction>} Prepared transaction
+     */
+    async lastPrice(source, asset, options = {fee: 100}) {
+        return await buildTransaction(
+            this,
+            source,
+            this.contract.call('lastprice', buildAssetScVal(asset)),
+            options,
+            this.network
+        )
+    }
+
+    /**
+     * Builds a transaction to get last cross asset price
+     * @param {string|Account} source - Valid Stellar account ID, or Account object
+     * @param {Asset} baseAsset - Base asset
+     * @param {Asset} quoteAsset - Quote asset
+     * @param {TxOptions} options - Transaction options
+     * @returns {Promise<Transaction>} Prepared transaction
+     */
+    async xLastPrice(source, baseAsset, quoteAsset, options = {fee: 100}) {
+        return await buildTransaction(
+            this,
+            source,
+            this.contract.call(
+                'x_last_price',
+                buildAssetScVal(baseAsset),
+                buildAssetScVal(quoteAsset)
+            ),
+            options,
+            this.network
+        )
+    }
+
+    /**
+     * Builds a transaction to get last asset price records
+     * @param {string|Account} source - Valid Stellar account ID, or Account object
+     * @param {Asset} asset - Asset to get prices for
+     * @param {number} records - Number of records to return
+     * @param {TxOptions} options - Transaction options
+     * @returns {Promise<Transaction>} Prepared transaction
+     */
+    async prices(source, asset, records, options = {fee: 100}) {
+        return await buildTransaction(
+            this,
+            source,
+            this.contract.call(
+                'prices',
+                buildAssetScVal(asset),
+                xdr.ScVal.scvU32(records)
+            ),
+            options,
+            this.network
+        )
+    }
+
+    /**
+     * Builds a transaction to get last cross asset price records
+     * @param {string|Account} source - Valid Stellar account ID, or Account object
+     * @param {Asset} baseAsset - Base asset
+     * @param {Asset} quoteAsset - Quote asset
+     * @param {number} records - Number of records to return
+     * @param {TxOptions} options - Transaction options
+     * @returns {Promise<Transaction>} Prepared transaction
+     */
+    async xPrices(source, baseAsset, quoteAsset, records, options = {fee: 100}) {
+        return await buildTransaction(
+            this,
+            source,
+            this.contract.call(
+                'x_prices',
+                buildAssetScVal(baseAsset),
+                buildAssetScVal(quoteAsset),
+                xdr.ScVal.scvU32(records)
+            ),
+            options,
+            this.network
+        )
+    }
+
+    /**
+     * Builds a transaction to get asset price records in a period
+     * @param {string|Account} source - Valid Stellar account ID, or Account object
+     * @param {Asset} asset - Asset to get prices for
+     * @param {number} records - Number of records to return
+     * @param {TxOptions} options - Transaction options
+     * @returns {Promise<Transaction>} Prepared transaction
+     */
+    async twap(source, asset, records, options = {fee: 100}) {
+        return await buildTransaction(
+            this,
+            source,
+            this.contract.call(
+                'twap',
+                buildAssetScVal(asset),
+                xdr.ScVal.scvU32(records)
+            ),
+            options,
+            this.network
+        )
+    }
+
+    /**
+     * Builds a transaction to get last cross asset price in a period
+     * @param {string|Account} source - Valid Stellar account ID, or Account object
+     * @param {Asset} baseAsset - Base asset
+     * @param {Asset} quoteAsset - Quote asset
+     * @param {number} records - Number of records to return
+     * @param {TxOptions} options - Transaction options
+     * @returns {Promise<Transaction>} Prepared transaction
+     */
+    async xTwap(source, baseAsset, quoteAsset, records, options = {fee: 100}) {
+        return await buildTransaction(
+            this,
+            source,
+            this.contract.call(
+                'x_twap',
+                buildAssetScVal(baseAsset),
+                buildAssetScVal(quoteAsset),
+                xdr.ScVal.scvU32(records)
+            ),
+            options,
+            this.network
+        )
+    }
+
+    /**
+     * @param {Transaction} transaction - Transaction to submit
+     * @param {xdr.DecoratedSignature[]} signatures - Signatures
+     * @returns {Promise<TransactionResponse>} Transaction response
+     */
+    async submitTransaction(transaction, signatures = []) {
+        const txXdr = transaction.toXDR() //Get the raw XDR for the transaction to avoid modifying the transaction object
+        const tx = new Transaction(txXdr, this.network) //Create a new transaction object from the XDR
+        signatures.forEach(signature => tx.addDecoratedSignature(signature))
+
+        const submitResult = await this.server.sendTransaction(tx)
+        if (submitResult.status !== 'PENDING') {
+            const error = new Error(`Transaction submit failed: ${submitResult.status}`)
+            error.status = submitResult.status
+            error.errorResultXdr = submitResult.errorResultXdr
+            error.hash = submitResult.hash
+            throw error
+        }
+        const hash = submitResult.hash
+        let response = await this.getTransaction(hash)
+        while (response.status === 'PENDING' || response.status === 'NOT_FOUND') {
+            response = await this.getTransaction(hash)
+            await new Promise(resolve => setTimeout(resolve, 500))
+        }
+
+        response.hash = hash //Add hash to response to avoid return new object
+        if (response.status === 'FAILED') {
+            const error = new Error(`Transaction submit failed, result: ${response.status}`)
+            error.status = response.status
+            error.hash = response.hash
+            error.envelopeXdr = response.envelopeXdr
+            error.resultXdr = response.resultXdr
+            error.resultMetaXdr = response.resultMetaXdr
+
+        }
+        return response
+    }
+
+    /**
+     * @param {string} hash - Transaction hash
+     * @returns {Promise<TransactionResponse>} - Transaction response
+     */
+    async getTransaction(hash) {
+        return await this.server.getTransaction(hash)
+    }
+
+    /**
+     * @param {string} result - Trasanction meta XDR
+     * @returns {string} - Keypair public key
+     */
+    static parseAdminResult(result) {
+        const adminBuffer = getSorobanResultValue(result)?.value()?.value()?.value()
+        if (adminBuffer === undefined)
+            return null
+        const adminPublicKey = new Keypair({type: 'ed25519', publicKey: adminBuffer})
+        return adminPublicKey.publicKey()
+    }
+
+    /**
+     * @param {string} result - Trasanction meta XDR
+     * @returns {Asset} - Asset object
+     */
+    static parseBaseResult(result) {
+        const val = getSorobanResultValue(result)
+        if (val === undefined)
+            return null
+        return parseXdrAssetResult(val)
+    }
+
+    /**
+     * @param {string} result - Trasanction meta XDR
+     * @returns {number} - Number value
+     */
+    static parseNumberResult(result) {
+        const val = getSorobanResultValue(result)
+        if (val === undefined)
+            return null
+        return Number(val.value())
+    }
+
+    /**
+     * @param {string} result - Trasanction meta XDR
+     * @returns {Asset[]} - Array of asset objects
+     */
+    static parseAssetsResult(result) {
+        const val = getSorobanResultValue(result)
+        if (val === undefined)
+            return null
+        const assets = []
+        for (const assetResult of val.value())
+            assets.push(parseXdrAssetResult(assetResult))
+        return assets
+    }
+
+    /**
+     * @param {string} result - Trasanction meta XDR
+     * @returns {Price} - Price object
+     */
+    static parsePriceResult(result) {
+        const val = getSorobanResultValue(result)
+        if (val === undefined)
+            return null
+        return parseXdrPriceResult(val)
+    }
+
+    /**
+     * @param {string} result - Trasanction meta XDR
+     * @returns {Price[]} - Array of price objects
+     */
+    static parsePricesResult(result) {
+        const val = getSorobanResultValue(result)
+
+        if (val === undefined)
+            return null
+        const prices = []
+        console.log(val)
+        for (const priceResult of val.value())
+            prices.push(parseXdrPriceResult(priceResult))
+        return prices
+    }
+
+    /**
+     * @param {string} result - Trasanction meta XDR
+     * @returns {BigInt} - twap value
+     */
+    static parseTwapResult(result) {
+        const val = getSorobanResultValue(result)
+        if (val === undefined)
+            return null
+        return scValToBigInt(val)
+    }
+>>>>>>> 1f2a01a8bdf6fcae018186ecb1d7f008169e28ce
 }
 
 module.exports = OracleClient;
