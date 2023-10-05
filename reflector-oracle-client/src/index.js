@@ -75,7 +75,7 @@ async function buildTransaction(client, source, operation, options, network) {
         .addOperation(operation)
         .setTimeout(options.timeout || 0)
         .build()
-
+    console.log("Prepping tx...")
     return await client.server.prepareTransaction(transaction, client.network)
 }
 
@@ -278,6 +278,7 @@ class OracleClient {
      * @returns {Promise<Transaction>} Prepared transaction
      */
     async setPrice(source, updates, timestamp, options = {fee: 100}) {
+        console.log("Inside set price." + timestamp)
         const scValPrices = xdr.ScVal.scvVec(updates.map(u => nativeToScVal(u, {type: 'i128'})))
         return await buildTransaction(
             this,
@@ -651,9 +652,11 @@ class OracleClient {
      */
     static parsePricesResult(result) {
         const val = getSorobanResultValue(result)
+
         if (val === undefined)
             return null
         const prices = []
+        console.log(val)
         for (const priceResult of val.value())
             prices.push(parseXdrPriceResult(priceResult))
         return prices
