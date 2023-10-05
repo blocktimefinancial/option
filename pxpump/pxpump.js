@@ -24,16 +24,32 @@ const FIVE_MINUTES_MS = 5 * ONE_MINUTE_MS;
 //   "b7664664ed4f93e1773448d8959e9bcc1cf213564f1ff6cc832a1793635050f8";
 //const contractId = "e1f77313773d8e429836c080e5470bdfb28f34f33847827601b0c540ace109bf";
 const contractId = "CDQ7O4YTO46Y4QUYG3AIBZKHBPP3FDZU6M4EPATWAGYMKQFM4EE37UL6";
-
 const pk = "GDZ4CDLVSHQIAXRBTPHTPJ5MSCC6XO4R4IXRGRQ6VOVV2H2HFSQJHRYH";
 const secret = "SCIGOGUPFOZSEBVZBEF3BJL6SZGVSFYANQ6BZE6PTTQ7S4YXYDPY4JHL";
 
 // Removed conversion functions as these are now part of the js-soroban-client library
 
-function createContractTransaction(networkPassphrase, sourceAccount, contractId, method, ...args) {
+/**
+ * Creates a transaction to call a method on a Soroban smart contract.
+ *
+ * @param {string} networkPassphrase - The network passphrase.
+ * @param {SorobanClient.Account} sourceAccount - The source account for the transaction.
+ * @param {string} contractId - The ID of the Soroban smart contract.
+ * @param {string} method - The name of the method to call on the smart contract.
+ * @param {...any} args - The arguments to pass to the method.
+ * @returns {SorobanClient.Transaction} - The transaction object.
+ */
+function createContractTransaction(
+  networkPassphrase,
+  sourceAccount,
+  contractId,
+  method,
+  ...args
+) {
   let myArgs = args || [];
-  contractId = "e1f77313773d8e429836c080e5470bdfb28f34f33847827601b0c540ace109bf";
-  
+  contractId =
+    "e1f77313773d8e429836c080e5470bdfb28f34f33847827601b0c540ace109bf";
+
   const contract = new SorobanClient.Contract(contractId);
 
   console.log(
@@ -43,7 +59,7 @@ function createContractTransaction(networkPassphrase, sourceAccount, contractId,
       3
     )}`
   );
-  
+
   return new SorobanClient.TransactionBuilder(sourceAccount, {
     fee: 100,
     networkPassphrase: networkPassphrase,
@@ -53,6 +69,15 @@ function createContractTransaction(networkPassphrase, sourceAccount, contractId,
     .build();
 }
 
+/**
+ * Invokes a Soroban smart contract with the given parameters.
+ * @async
+ * @param {Object} params - The parameters for invoking the contract.
+ * @param {Object} params.body - The body of the request.
+ * @param {string} [params.publicKey] - The public key of the source account.
+ * @param {string} [params.source] - The source account.
+ * @returns {Promise<Object>} - The result of invoking the contract.
+ */
 async function invokeContract(params) {
   let body = params.body;
   let src = params.publicKey || params.source;
@@ -63,10 +88,10 @@ async function invokeContract(params) {
   // Create a transaction to call the contract
   let tx = createContractTransaction(
     SorobanClient.Networks.FUTURENET, // Network
-    source,           // Source account
-    body.contractId,  // Contract ID
-    body.method,      // Method name
-    ...body.params    // Method parameters
+    source, // Source account
+    body.contractId, // Contract ID
+    body.method, // Method name
+    ...body.params // Method parameters
   );
 
   // Little peek at the transaction before it's simulated
@@ -79,12 +104,11 @@ async function invokeContract(params) {
   console.log(`Preparing transaction for ${body.contractId}`);
   tx = await server.prepareTransaction(tx, SorobanClient.Networks.FUTURENET);
 
-
   console.log(`Signing with secret: ${body.secret}`);
   tx.sign(SorobanClient.Keypair.fromSecret(body.secret));
 
-    // Log a quick peek at the transaction after it is signed and before it's sent
-    console.log(`After prepareTransaction Tx: ${tx.toXDR()}`);
+  // Log a quick peek at the transaction after it is signed and before it's sent
+  console.log(`After prepareTransaction Tx: ${tx.toXDR()}`);
   let result = await server.sendTransaction(tx);
 
   // Peek at the results and then wait for the transaction to complete
@@ -210,7 +234,7 @@ function toSorobanArgs(quote) {
     `Market state: ${marketState}, flags: ${flags}, price: ${price}, timestamp: ${timestamp}`
   );
   // from the quote.  We'll just stringify the quote for now.
-  let symbolCode = SorobanClient.nativeToScVal(1, {type: "i128"});
+  let symbolCode = SorobanClient.nativeToScVal(1, { type: "i128" });
   console.dir(`Symbol code: ${symbolCode}`);
 
   // We know that Soroban VM doesn't support floating point numbers, so we'll
@@ -218,18 +242,20 @@ function toSorobanArgs(quote) {
   // wait until js-stellar-base has better conversion support.
   // Moving to 2 decimal places for now.
   // convert numbers to i128 values with 7 decimal places of precision.
-  price = SorobanClient.nativeToScVal(Math.floor(price * 100), {type: "i128"});
+  price = SorobanClient.nativeToScVal(Math.floor(price * 100), {
+    type: "i128",
+  });
   console.dir(`Price: ${price}`);
   // Dates are also not supported, so we'll convert them to timestamps in
   // the same format as Soroban VM timestamps.
   const ts = timestamp;
   console.log(`Timestamp: ${ts}`);
 
-  timestamp =  SorobanClient.nativeToScVal(ts, {type: "i128"});
+  timestamp = SorobanClient.nativeToScVal(ts, { type: "i128" });
   console.dir(`Timestamp: ${timestamp}`);
 
   //Flags are a bit field, so we'll just set the third bit
-  flags = SorobanClient.nativeToScVal(flags, {type: "i128"});
+  flags = SorobanClient.nativeToScVal(flags, { type: "i128" });
   console.dir(`Flags: ${flags}`);
 
   return [symbolCode, price, timestamp, flags];
@@ -241,8 +267,13 @@ async function updateSmartContract(scDetailsObj, quote) {
   // Create the transaction to update the smart contract
 
   let minAccount = await server.getAccount(pk);
-  console.log(`Account: ${minAccount._accountId} SeqNum: ${minAccount.sequence}`);
-  let account = new SorobanClient.Account(minAccount._accountId, minAccount.sequence.toString());
+  console.log(
+    `Account: ${minAccount._accountId} SeqNum: ${minAccount.sequence}`
+  );
+  let account = new SorobanClient.Account(
+    minAccount._accountId,
+    minAccount.sequence.toString()
+  );
   // We don't know what the fees will be, so we'll just use a constant fee
   const fee = 100;
 
