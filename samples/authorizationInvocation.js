@@ -29,6 +29,10 @@ const signer2 = SorobanClient.Keypair.fromSecret(
 
 async function main() {
   // Get the source account from the ledger
+  console.log(`Signer1: ${signer1.publicKey()}`);
+  console.log(`Signer2: ${signer2.publicKey()}`);
+
+  // Get the source account from the ledger
   const source = await server.getAccount(signer1.publicKey());
   console.dir(source);
 

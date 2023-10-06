@@ -17,63 +17,63 @@ impl Testsc {
         vec![&env, HELLO, to]
     }
     // Now we start adding some more complex functions, one parameter type at a time
-    pub fn int_128test(env: Env, i: i128) -> i128 {
+    pub fn int_128test(_env: Env, i: i128) -> i128 {
         i
     }
 
-    pub fn uint_128test(env: Env, i: u128) -> u128 {
+    pub fn uint_128test(_env: Env, i: u128) -> u128 {
         i
     }
 
-    pub fn int_64test(env: Env, i: i64) -> i64 {
+    pub fn int_64test(_env: Env, i: i64) -> i64 {
         i
     }
 
-    pub fn uint_64test(env: Env, i: u64) -> u64 {
+    pub fn uint_64test(_env: Env, i: u64) -> u64 {
         i
     }
 
-    pub fn int_32test(env: Env, i: i32) -> i32 {
+    pub fn int_32test(_env: Env, i: i32) -> i32 {
         i
     }
 
-    pub fn uint_32test(env: Env, i: u32) -> u32 {
+    pub fn uint_32test(_env: Env, i: u32) -> u32 {
         i
     }
 
-    pub fn booltest(env: Env, b: bool) -> bool {
+    pub fn booltest(_env: Env, b: bool) -> bool {
         b
     }
 
-    pub fn symboltest(env: Env, s: Symbol) -> Symbol {
+    pub fn symboltest(_env: Env, s: Symbol) -> Symbol {
         s
     }
 
-    pub fn address_test(env: Env, a: Address) -> Address {
+    pub fn address_test(_env: Env, a: Address) -> Address {
         a
     }
 
-    pub fn bytes_test(env: Env, b: Bytes) -> Bytes {
+    pub fn bytes_test(_env: Env, b: Bytes) -> Bytes {
         b
     }
 
-    pub fn vec_test(env: Env, v: Vec<i128>) -> Vec<i128> {
+    pub fn vec_test(_env: Env, v: Vec<i128>) -> Vec<i128> {
         v
     }
 
-    pub fn signing_test(env: Env, a: Address) -> Address {
+    pub fn signing_test(_env: Env, a: Address) -> Address {
         a.require_auth();
         a
     }
 
-    pub fn dbl_sign_test(env: Env, a: Address, b: Address) -> (Address, Address) {
+    pub fn dbl_sign_test(_env: Env, a: Address, b: Address) -> (Address, Address) {
         a.require_auth();
         b.require_auth();
         (a, b)
     }
 
     pub fn test_all(
-        env: Env,
+        _env: Env,
         pu32: u32,
         pu64: u64,
         pu128: u128,
@@ -86,4 +86,5 @@ impl Testsc {
     }
 }
 
+#[cfg(test)]
 mod test;
