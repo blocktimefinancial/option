@@ -269,7 +269,7 @@ impl OptionContract {
         env: Env,
     ) -> OptionDef  {
 
-        env.storage().instance().bump(100000);
+        env.storage().instance().bump(100000, 100000);
 
         if !is_initialized(&env) {
             panic!("contract is not initialized");
@@ -279,25 +279,25 @@ impl OptionContract {
             panic!("killswitch for read/write/read only activated");
         }
         // // Get the option details
-        let init = env.storage().instance().get(&DataKey::Init).unwrap();
-        let opt_type = env.storage().instance().get(&DataKey::OptionType).unwrap();
-        let strike = env.storage().instance().get(&DataKey::Strike).unwrap();
-        let exp = env.storage().instance().get(&DataKey::Expiration).unwrap();
-        let oracle = env.storage().instance().get(&DataKey::Oracle).unwrap();
-        let token = env.storage().instance().get(&DataKey::Token).unwrap();
-        let sdep = env.storage().instance().get(&DataKey::SDep).unwrap();
-        let bdep = env.storage().instance().get(&DataKey::BDep).unwrap();
-        let balance = env.storage().instance().get(&DataKey::Balance).unwrap();
-        let mkt_px = env.storage().instance().get(&DataKey::MktPrice).unwrap();
-        let oracle_ts = env.storage().instance().get(&DataKey::OracleTs).unwrap();
-        let oracle_flags = env.storage().instance().get(&DataKey::OracleFlags).unwrap();
-        let trd_id = env.storage().instance().get(&DataKey::TradeId).unwrap();
-        let admin = env.storage().instance().get(&DataKey::Admin).unwrap();
-        let decimals = env.storage().instance().get(&DataKey::Decimals).unwrap();
+        let init:bool = env.storage().instance().get(&DataKey::Init).unwrap();
+        let opt_type: u32 = env.storage().instance().get(&DataKey::OptionType).unwrap();
+        let strike: i128 = env.storage().instance().get(&DataKey::Strike).unwrap();
+        let exp: TimeBound = env.storage().instance().get(&DataKey::Expiration).unwrap();
+        let oracle: Address = env.storage().instance().get(&DataKey::Oracle).unwrap();
+        let token: Address = env.storage().instance().get(&DataKey::Token).unwrap();
+        let sdep: i128 = env.storage().instance().get(&DataKey::SDep).unwrap();
+        let bdep: i128 = env.storage().instance().get(&DataKey::BDep).unwrap();
+        let balance: i128 = env.storage().instance().get(&DataKey::Balance).unwrap();
+        let mkt_px:i128 = env.storage().instance().get(&DataKey::MktPrice).unwrap();
+        let oracle_ts: u64 = env.storage().instance().get(&DataKey::OracleTs).unwrap();
+        let oracle_flags: i128 = env.storage().instance().get(&DataKey::OracleFlags).unwrap();
+        let trd_id:u64 = env.storage().instance().get(&DataKey::TradeId).unwrap();
+        let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
+        let decimals:u32 = env.storage().instance().get(&DataKey::Decimals).unwrap();
 
         let rv: OptionDef = OptionDef {
-            collateral_token: token,
-            underlying_token: token,
+            collateral_token: token.clone(),
+            underlying_token: token.clone(),
             underlying_symbol: symbol_short!("USDC"),
             strike: strike,
             mkt_price: mkt_px,

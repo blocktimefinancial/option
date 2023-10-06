@@ -13,10 +13,9 @@ that are regulated and need regulatory and compliance reports, processes, and wo
 
 Please see our website at [blocktimefinancial.com](https://blocktimefinancial.com) for more information and solutions.
 
-## Option Smart Contract
-Current ContractId: e94760e06da32836fe8dcc71e7b33db0c5297a8b86ee2db0e23ea5e612353b19
+## Option Smart Contract - Preview 11 20.0.0-rc2 20231006
+ContractId: CDAMGXO4ATHL2A74LDD4V6CQTMASOLRP2W2WXYPKKQ6AA3BQDLSBZOJA
 
-As StrKey: CDUUOYHANWRSQNX6RXGHDZ5THWYMKKL2RODO4LNQ4I7KLZQSGU5RSWB3
 ### USDC Token (Wrapped Stellar Classic Asset) used for collateral
 ContractId: CAEXMJL7KLVOYBEPOOSN6ICJS3VV3RK33HSRVKGKKCQTFGEB6ILI3OOG
 

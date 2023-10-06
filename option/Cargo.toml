@@ -1,6 +1,6 @@
 [package]
 name = "soroban-option"
-version = "0.1.0"
+version = "0.1.11"
 authors = ["Block TIme Financial, Inc <info@blocktimefinancial.com>"]
 license = "MIT"
 edition = "2021"
@@ -16,10 +16,10 @@ doctest = false
 testutils = ["soroban-sdk/testutils"]
 
 [dependencies]
-soroban-sdk = "0.9.2"
+soroban-sdk = "20.0.0-rc2"
 
 [dev_dependencies]
-soroban-sdk = { version = "0.9.2", features = ["testutils"] }
+soroban-sdk = { version = "20.0.0-rc2", features = ["testutils"] }
 
 [profile.release]
 opt-level = "z"
