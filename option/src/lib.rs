@@ -28,7 +28,7 @@
 #[contract]
 struct OptionContract;
 
-use soroban_sdk::{contract, contractimpl, contracttype, token, Address, Env, Symbol, Vec};
+use soroban_sdk::{contract, contractimpl, contracttype, token, symbol_short, Address, Env, Symbol, Vec};
 
 mod oracle {
     soroban_sdk::contractimport!(
@@ -81,14 +81,14 @@ pub enum DataKey {
     Version,    // Version of the contract
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 #[contracttype]
 pub enum TimeBoundKind {
     Before,
     After,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 #[contracttype]
 pub struct TimeBound {
     pub kind: TimeBoundKind,
@@ -96,7 +96,7 @@ pub struct TimeBound {
 }
 
 // This is a very simplistic option trade report.  We know there's more to it than this!
-#[derive(Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 #[contracttype]
 pub struct Trade {
     pub price: i128,     // Price of the trade, in terms of collateral token
@@ -108,7 +108,7 @@ pub struct Trade {
     pub trade_id: u64,   // Trade ID
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 #[contracttype]
 pub struct Position {
     pub pos: i128,
@@ -116,7 +116,7 @@ pub struct Position {
     pub token: Address,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 #[contracttype]
 pub struct OptionDef {
     pub collateral_token: Address,
@@ -156,13 +156,16 @@ impl OptionContract {
         env.storage().instance().set(&DataKey::KillSwitch, &0); // Kill switch is off
     }
 
-    pub fn killswitch(env: Env, killswitch: u32) -> u32 {
+    pub fn killswitch(env: Env, admin_user: Address, killswitch: u32) -> u32 {
+        
+        admin_user.require_auth();
+
         if !is_initialized(&env) {
             panic!("contract is not initialized");
         }
         // The killswitch can only be set by the admin
         let current_admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
-        if current_admin != env.caller() {
+        if current_admin != admin_user {
             panic!("caller is not the admin");
         }
         // The killswitch can only be set to 0 or 1 or 2
@@ -186,7 +189,7 @@ impl OptionContract {
         oracle: Address, // oracle contract address
         token: Address,  // token address (e.g. USDC)
         admin: Address,  // admin address
-    ) {
+    ) -> u32 {
         if !is_initialized(&env) {
             panic!("contract is not initialized");
         }
@@ -200,6 +203,9 @@ impl OptionContract {
         // regulatory requirements.  The admin should know the buyer
         // and seller and their addresses.
 
+        // Make sure the caller is the admin
+        admin.require_auth();
+
         // Check that the caller is the admin
         // Get the current admin
         let current_admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
@@ -207,8 +213,6 @@ impl OptionContract {
             panic!("caller is not the admin");
         }
 
-        // Make sure the caller is the admin
-        admin.require_auth();
 
         let e: TimeBound = TimeBound {
             kind: TimeBoundKind::After,
@@ -263,23 +267,10 @@ impl OptionContract {
     // Return the option details
     pub fn specs(
         env: Env,
-    ) -> (
-        bool,
-        u32,
-        i128,
-        TimeBound,
-        Address,
-        Address,
-        i128,
-        i128,
-        i128,
-        i128,
-        i128,
-        i128,
-        u64,
-        Address,
-        u32,
-    ) {
+    ) -> OptionDef  {
+
+        env.storage().instance().bump(100000);
+
         if !is_initialized(&env) {
             panic!("contract is not initialized");
         }
@@ -304,23 +295,19 @@ impl OptionContract {
         let admin = env.storage().instance().get(&DataKey::Admin).unwrap();
         let decimals = env.storage().instance().get(&DataKey::Decimals).unwrap();
 
-        (
-            init,
-            opt_type,
-            strike,
-            exp,
-            oracle,
-            token,
-            sdep,
-            bdep,
-            balance,
-            mkt_px,
-            oracle_ts,
-            oracle_flags,
-            trd_id,
-            admin,
-            decimals,
-        )
+        let rv: OptionDef = OptionDef {
+            collateral_token: token,
+            underlying_token: token,
+            underlying_symbol: symbol_short!("USDC"),
+            strike: strike,
+            mkt_price: mkt_px,
+            exp: exp,
+            opt_type: opt_type,
+            symbol: symbol_short!("USDC"),
+            decimals: decimals,
+        };
+
+        rv
     }
     // The seller deposits USDC to the contract in the amount of
     // strike price - option premium * number of options.
@@ -457,7 +444,7 @@ impl OptionContract {
     // Example: Strike price is 100, trade price was 10, number of options is 10.
     // Current market price is 50.  Buyer is entitled to 500 USDC.  Seller is
     // entitled to 500 USDC.
-    pub fn mtm(env: Env) -> Vec<i128> {
+    pub fn mtm(env: Env, user: Address) -> Vec<i128> {
         if !is_initialized(&env) {
             panic!("contract not initialized");
         }
@@ -465,11 +452,14 @@ impl OptionContract {
         if get_killswitch(&env) > 1 {
             panic!("killswitch for read/write/read only activated");
         }
+
+        user.require_auth();
+
         // Only the admin, buyer or seller can call this function.
         let current_admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
         let buyer_adr: Address = env.storage().instance().get(&DataKey::BAdr).unwrap();
         let seller_adr: Address = env.storage().instance().get(&DataKey::SAdr).unwrap();
-        if current_admin != env.caller() && buyer_adr != env.caller() && seller_adr != env.caller() {
+        if current_admin != user && buyer_adr != user && seller_adr != user {
             panic!("caller is not the admin, buyer or seller");
         }
         // Update the market price from the oracle.
@@ -511,11 +501,14 @@ impl OptionContract {
         if get_killswitch(&env) > 0 {
             panic!("killswitch for read/write activated");
         }
+
+        counter_party.require_auth();
+
         // Only the admin, buyer, or seller can settle the contract.
         let current_admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
         let buyer_adr: Address = env.storage().instance().get(&DataKey::BAdr).unwrap();
         let seller_adr: Address = env.storage().instance().get(&DataKey::SAdr).unwrap();
-        if current_admin != env.caller() && buyer_adr != env.caller() && seller_adr != env.caller() {
+        if current_admin != counter_party && buyer_adr != counter_party && seller_adr != counter_party {
             panic!("caller is not the admin, buyer or seller");
         }
         // Get the option details
